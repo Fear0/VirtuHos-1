@@ -1,0 +1,12 @@
+Fragen: 
+
+Was genau heißt zeichnen?
+Sollen wir tatsächlich ganze Gebäude darstellen oder nur einzelne Ebenen?
+Sollen wir uns an ein "Grid" halten? und wenn ja wie fein soll das sein?
+Welche Raumarte genau?
+Welche Elemente genau?
+Wie genau sollen die Dokumente dargesetellt werden?
+Wo sind die Schnittstellen zu anderen Themen?
+Wie genau sollen wir Personen darstellen?
+Präferenzen an die Sprache?
+In welcher Umgebung soll das ganze laufen?

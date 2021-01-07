@@ -1,0 +1,9 @@
+Sollen Nutzer sich einloggen können? (muss ja eigentlich aber tbh würde ich das vermeiden wollen dass es dem editor zufällt)
+Soll der Zugang zu bestehenden Räumen über Name und/oder passwort geregelt werden?
+Viele Gebäude brauchen einen Flur an dem die Räume angeordnet sind, soll ein Flur raum ohne Funktionalität hinzugefügt werden oder wird dafür die Halle benutzt? (zufällige treffen auf dem weg zum arbeitsplatz?)
+Es soll eine java webapp werden gibt es Vorlieben zu frameworks und/oder datenbanken?
+Soll im GUI.Editor zur die Möglichkeit erstellt werden auf einem tisch shared dokuments abzulegen oder werden die dokuments dort schon zur verfügung gestellt?
+bei erstllen des raumes nur ankündigen dass dort eine ablage für shared dokument zur verfügung stehen soll und shared dkouments bei runtime einfügen?
+aufgabe der interaktion?
+shared dokuments über google drive schnittstelle?
+wer soll einen raum nach erstellung verändern können? nur der ersteller?
