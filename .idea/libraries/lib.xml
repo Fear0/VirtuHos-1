@@ -3,11 +3,14 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/Halle/H1/lib/apache-commons-codec-1.4.jar!/" />
       <root url="jar://$PROJECT_DIR$/Halle/H1/lib/lombok.jar!/" />
+      <root url="file://$PROJECT_DIR$/Editor/jfx/lib" />
+      <root url="jar://C:/Program Files/Java/mysql-connector-java-8.0.22/mysql-connector-java-8.0.22.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/Editor/jfx/lib" />
     </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/Editor/jfx/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/Editor/jfx/lib" recursive="false" type="SOURCES" />
   </library>
 </component>

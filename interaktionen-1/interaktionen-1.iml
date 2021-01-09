@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://$MODULE_DIR$/../Interaktionen/out" />
+    <content url="file://$MODULE_DIR$/../Interaktionen">
+      <sourceFolder url="file://$MODULE_DIR$/../Interaktionen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../Interaktionen/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="selenium-java-3.141" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://C:/Program Files/Java/opencv/build/java/opencv-450.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://C:/Program Files/Java/opencv/build/java/opencv-450.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://C:/Program Files/Java/selenium-java-3.141.59/libs" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+        <jarDirectory url="file://C:/Program Files/Java/selenium-java-3.141.59/libs" recursive="false" />
+      </library>
+    </orderEntry>
+  </component>
+</module>
