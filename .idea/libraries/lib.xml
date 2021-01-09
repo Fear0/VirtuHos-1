@@ -5,6 +5,9 @@
       <root url="jar://$PROJECT_DIR$/Halle/H1/lib/lombok.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Editor/jfx/lib" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/Editor/jfx/lib" recursive="false" type="SOURCES" />
   </library>
 </component>
