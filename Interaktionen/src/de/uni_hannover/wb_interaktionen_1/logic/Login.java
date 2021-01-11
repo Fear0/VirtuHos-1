@@ -72,7 +72,7 @@ public class Login {
             if(db.userIsInDB(getCurrentUser().getName())) {
                 db.setOnlineStatus(getCurrentUser().getName(), false);
             }
-            threadUpdate.stopThread();
+            //threadUpdate.stopThread();
         } catch (SQLException ex){
             System.out.println("Error when trying to communicating with the database");
         }

@@ -111,10 +111,12 @@ public class InteraktionControl {
      *  Logs out the user.
      */
     public void logout(){
+        System.out.println("Wird aufgerufen");
         if(login.getCurrentUser() !=null) {
             if (login.getCurrentUser().getCurrent_room() != null) {
                 login.getCurrentUser().getCurrent_room().leave_Room(login.currentUser, db, login.getCurrentUser().getCurrent_room().getId());
             }
+            System.out.println("kurz vor offline");
             login.setCurrentUserOffline();
             login.resetCurrentUser();
         }
