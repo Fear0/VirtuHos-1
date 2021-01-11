@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitMenuButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.text.Text?>
+<Group fx:id="dc" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+    <children>
+        <Pane fx:id="lobby" layoutX="448.0" layoutY="580.0" prefHeight="154.0" prefWidth="200.0">
+            <children>
+                <Rectangle fx:id="lobbyHalle" fill="#c9bfbf" height="162.0" layoutX="-4.0" width="207.0" />
+                <Label alignment="CENTER" layoutX="126.0" layoutY="123.0" prefHeight="17.0" prefWidth="66.0" text="LobbyHalle" textAlignment="CENTER" />
+            </children>
+        </Pane>
+
+        <Pane layoutX="484.0" layoutY="62.0" prefHeight="97.0" prefWidth="388.0" style="-fx-background-color: #D1D0D0#D1D0D0;">
+            <children>
+                <Rectangle fx:id="office1" fill="#b9aca2" height="97.0" width="388.0" />
+                <Label alignment="CENTER" layoutX="161.0" layoutY="40.0" prefHeight="17.0" prefWidth="66.0" text="Büro" textAlignment="CENTER" />
+            </children>
+        </Pane>
+        <Pane layoutX="235.0" layoutY="61.0" prefHeight="97.0" prefWidth="238.0" style="-fx-background-color: #D1D0D0#D1D0D0;">
+            <children>
+                <Rectangle fx:id="office2" fill="#b8aa95" height="97.0" width="238.0" />
+                <Label alignment="CENTER" layoutX="86.0" layoutY="40.0" prefHeight="17.0" prefWidth="66.0" text="Büro" textAlignment="CENTER" />
+            </children>
+        </Pane>
+        <Pane layoutX="119.0" layoutY="158.0" prefHeight="202.0" prefWidth="116.0" style="-fx-background-color: #D1D0D0#D1D0D0;">
+            <children>
+                <Rectangle fx:id="office3" fill="#c3c1b1" height="202.0" width="116.0" />
+                <Label alignment="CENTER" layoutX="25.0" layoutY="93.0" prefHeight="17.0" prefWidth="66.0" text="Büro" textAlignment="CENTER" />
+            </children>
+        </Pane>
+        <Pane layoutX="119.0" layoutY="378.0" prefHeight="202.0" prefWidth="116.0" style="-fx-background-color: #D1D0D0#D1D0D0;">
+            <children>
+                <Rectangle fx:id="office4" fill="#a19d8e" height="202.0" width="116.0" />
+                <Label alignment="CENTER" layoutX="25.0" layoutY="84.0" prefHeight="17.0" prefWidth="66.0" text="Büro" textAlignment="CENTER" />
+            </children>
+        </Pane>
+        <Pane id="Halle" fx:id="Halle" layoutX="235.0" layoutY="158.0" prefHeight="422.0" prefWidth="695.0" style="-fx-background-color: #CBCBCB#CBCBCB;">
+            <children>
+                <Rectangle fx:id="Rhalle" fill="gray" height="422.0" width="695.0" />
+                <Label alignment="CENTER" layoutX="615.0" layoutY="350.0" prefHeight="17.0" prefWidth="66.0" text="Halle" textAlignment="CENTER">
+                    <font>
+                        <Font size="16.0" />
+                    </font>
+                </Label>
+            </children>
+        </Pane>
+        <Button fx:id="add" layoutX="1023.0" layoutY="547.0" mnemonicParsing="false" onAction="#add" prefHeight="27.0" prefWidth="96.0" text="Enter" visible="false" />
+        <TextField fx:id="Name" layoutX="958.0" layoutY="466.0" promptText="Name" visible="false" />
+        <TextField fx:id="ID" layoutX="958.0" layoutY="507.0" promptText="I.D." visible="false" />
+        <ToggleButton fx:id="alone" layoutX="958.0" layoutY="548.0" mnemonicParsing="false" text="alone" visible="false" />
+
+        <SplitMenuButton fx:id="user" layoutX="958.0" layoutY="13.0" mnemonicParsing="false" onAction="#selectUser" prefHeight="27.0" prefWidth="160.0" text="Select User" textAlignment="CENTER">
+            <items>
+                <MenuItem mnemonicParsing="false" onAction="#selectAdmin" text="Admin" />
+                <MenuItem mnemonicParsing="false" onAction="#selectAngestellter" text="Benutzer" />
+            </items>
+        </SplitMenuButton>
+        <SplitMenuButton fx:id="platzierungBox" layoutX="956.0" layoutY="96.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="160.0" text="Platzierung" textAlignment="CENTER" visible="false">
+            <items>
+                <MenuItem mnemonicParsing="false" onAction="#selectHäufigkeit" onMenuValidation="#selectAdmin" text="Interaktionshäufigkeit" />
+                <MenuItem mnemonicParsing="false" onAction="#selectZufällig" text="Zufällig" />
+                <MenuItem mnemonicParsing="false" onAction="#selectInverse" text="Inverse" />
+                <MenuItem mnemonicParsing="false" onAction="#selectWithout" text="Ohne Kräfte" />
+            </items>
+        </SplitMenuButton>
+        <Button fx:id="load" layoutX="18.0" layoutY="13.0" mnemonicParsing="false" onAction="#load" prefHeight="27.0" prefWidth="100.0" text="Load Data" />
+        <Button layoutX="18.0" layoutY="48.0" mnemonicParsing="false" onAction="#groups" prefWidth="100.0" text="Print Groups" />
+         <Button layoutX="18.0" layoutY="120.0" mnemonicParsing="false" onAction="#connect" prefWidth="100.0" text="Client" />
+        <Text layoutX="80.0" layoutY="150.0" fx:id="hallsize" >Hall max size</Text>
+        <CheckBox fx:id="showPower" layoutX="787.0" layoutY="603.0" text="Kräfte anzeigen" />
+        <ComboBox fx:id="tests" layoutX="18.0" layoutY="598.0" onAction="#selectTest" onMouseClicked="#selectCurrentTest" prefWidth="150.0" promptText="Test-Setups" />
+        <Button fx:id="test07" layoutX="191.0" layoutY="598.0" mnemonicParsing="false" onAction="#select_test07" text="Start Test" />
+
+
+    </children>
+
+</Group>

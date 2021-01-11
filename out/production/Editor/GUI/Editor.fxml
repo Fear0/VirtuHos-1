@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="706.0" prefWidth="862.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.Controllers.EditorController">
+   <children>
+      <SplitPane dividerPositions="0.18953488372093022" prefWidth="813.0" VBox.vgrow="ALWAYS">
+        <items>
+          <AnchorPane fx:id="anchorPaneMenu" maxWidth="172.0" minHeight="0.0" minWidth="172.0" prefHeight="640.0" prefWidth="172.0" SplitPane.resizableWithParent="false">
+               <children>
+                  <Button id="Abbrechen" cancelButton="true" layoutX="47.0" layoutY="41.0" mnemonicParsing="false" onMouseClicked="#onCancelClicked" text="Abbrechen" />
+                  <Button id="Speichern" layoutX="7.0" layoutY="11.0" mnemonicParsing="false" onMouseClicked="#onSaveClicked" prefHeight="25.0" prefWidth="74.0" text="Speichern" />
+                  <Button id="Laden" layoutX="87.0" layoutY="11.0" mnemonicParsing="false" onMouseClicked="#onLoadClicked" prefHeight="25.0" prefWidth="74.0" text="Laden" />
+                  <ToggleButton id="Neu" fx:id="newRoom" layoutX="26.0" layoutY="90.0" mnemonicParsing="false" onMouseClicked="#onNewRoomClicked" prefHeight="38.0" prefWidth="116.0" text="Neuer Raum" textAlignment="CENTER">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="menu" />
+                     </toggleGroup></ToggleButton>
+                  <ToggleButton id="Löschen" accessibleRole="TOGGLE_BUTTON" layoutX="26.0" layoutY="493.0" mnemonicParsing="false" onMouseClicked="#onDeleteClicked" prefHeight="38.0" prefWidth="116.0" text="Löschen" toggleGroup="$menu" />
+                  <ToggleButton id="Tisch" layoutX="26.0" layoutY="247.0" mnemonicParsing="false" onMouseClicked="#onTableClicked" prefHeight="38.0" prefWidth="116.0" text="Tisch" toggleGroup="$menu" />
+                  <ToggleButton id="Stuhl" layoutX="26.0" layoutY="290.0" mnemonicParsing="false" onMouseClicked="#onChairClicked" prefHeight="38.0" prefWidth="116.0" text="Stuhl" toggleGroup="$menu" />
+                  <ToggleButton layoutX="26.0" layoutY="450.0" mnemonicParsing="false" onMouseClicked="#onMoveClicked" prefHeight="38.0" prefWidth="116.0" text="Bewegen" toggleGroup="$menu" />
+                  <ToggleButton fx:id="grid" layoutX="26.0" layoutY="561.0" mnemonicParsing="false" onMouseClicked="#onGridClicked" prefHeight="38.0" prefWidth="116.0" text="Grid" />
+                  <ToggleButton id="Roomname" accessibleRole="TOGGLE_BUTTON" layoutX="26.0" layoutY="176.0" mnemonicParsing="false" onMouseClicked="#onRoomNameClicked" prefHeight="38.0" prefWidth="116.0" text="Raumnamen" toggleGroup="$menu" />
+                  <MenuButton fx:id="roomTypes" layoutX="26.0" layoutY="133.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="116.0" text="Raumtypen">
+                     <items>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#selectOffice" text="Büro" toggleGroup="$menu" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#selectHalle" text="Halle" toggleGroup="$menu" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#selectMeetingRoom" text="Besprechungsraum" toggleGroup="$menu" />
+                     </items>
+                  </MenuButton>
+                  <ToggleButton accessibleRole="TOGGLE_BUTTON" layoutX="26.0" layoutY="333.0" mnemonicParsing="false" onMouseClicked="#onDocumentClicked" prefHeight="38.0" prefWidth="116.0" text="Dokument" toggleGroup="$menu" />
+                  <Slider fx:id="GridSlider" blockIncrement="5.0" layoutX="17.0" layoutY="635.0" majorTickUnit="10.0" max="60.0" min="10.0" minorTickCount="1" onMouseReleased="#onSliderDragged" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="30.0" />
+                  <Label layoutX="20.0" layoutY="610.0" prefHeight="17.0" prefWidth="59.0" text="Gridgröße:" />
+                  <ToggleButton layoutX="26.0" layoutY="407.0" mnemonicParsing="false" onMouseClicked="#onSelectClicked" prefHeight="38.0" prefWidth="116.0" text="Auswählen" toggleGroup="$menu" />
+               </children>
+            </AnchorPane>
+            <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" SplitPane.resizableWithParent="false">
+               <content>
+                <StackPane fx:id="myPane">
+                     <children>
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </StackPane>
+               </content>
+            </ScrollPane>
+        </items>
+      </SplitPane>
+   </children>
+</VBox>
