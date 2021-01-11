@@ -98,7 +98,7 @@ public class InteraktionControl {
             try{
                 db.loginOnline(userID);
                 login.setCurrentUser(new User(userID, db.getUserName(userID), db.getRoomWithRoomID(0, db), null));
-                db.addUserToRoom(userID, 0);
+                //db.addUserToRoom(userID, 0);
                 return true;
             } catch (SQLException ex){
                 ex.printStackTrace();
@@ -148,6 +148,8 @@ public class InteraktionControl {
      * @param is_hallgroup Indicates if the room is a real room (false) or its a group in the hall (true).
      */
     public void moveUser(String userID, int roomID, boolean is_hallgroup){
+        System.out.println(userID);
+        System.out.println(roomID);
         try {
             if (userID.equals(login.currentUser.getId())) {
                 if (!is_hallgroup) {
