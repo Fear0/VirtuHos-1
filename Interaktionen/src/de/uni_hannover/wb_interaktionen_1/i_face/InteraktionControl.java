@@ -155,15 +155,16 @@ public class InteraktionControl {
                 if (!is_hallgroup) {
                     ArrayList<Room> existent_rooms = db.getAllRooms();
                     for (Room room : existent_rooms) {
-                        if (room.getId() == roomID && db.getRoomWithRoomID(roomID, db).getCapacity() == db.getAllUserInRoom(roomID).size()) {
-                            //ToDo Kann auch durch eine Error Nachricht von Editor ersetzt werden.
-                            ErrorMessage err = new ErrorMessage();
-                            err.createError("Dieser Raum ist bereits voll.");
-                        } else {
-                            if (login.currentUser.getCurrent_room() != null) {
-                                login.currentUser.getCurrent_room().leave_Room(login.currentUser, db, login.currentUser.getCurrent_room().getId());
+                        if (room.getId() == roomID) {
+                            if (db.getRoomWithRoomID(roomID, db).getCapacity() == db.getAllUserInRoom(roomID).size()) {
+                                ErrorMessage err = new ErrorMessage();
+                                err.createError("Dieser Raum ist bereits voll.");
+                            } else {
+                                if (login.currentUser.getCurrent_room() != null) {
+                                    login.currentUser.getCurrent_room().leave_Room(login.currentUser, db, login.currentUser.getCurrent_room().getId());
+                                }
+                                room.addUser(login.currentUser);
                             }
-                            room.addUser(login.currentUser);
                         }
                     }
                 } else {
@@ -261,6 +262,11 @@ public class InteraktionControl {
         }
     }
 
+    /** Get the name of the user to a given ID
+     *
+     * @param userID ID of the user
+     * @return Username of the users given ID
+     */
     public String getUserName(String userID){
         try{
             return db.getUserName(userID);
@@ -270,6 +276,10 @@ public class InteraktionControl {
         }
     }
 
+    /** Delete a building with a given ID/name
+     *
+     * @param buildingID ID of the building you want to delete
+     */
     public void deleteBuilding(String buildingID){
         try{
             db.deleteBuilding(buildingID);
