@@ -229,4 +229,27 @@ public class InteraktionControl {
             e.printStackTrace();
         }
     }
+
+    /** Return all the rooms for the given building
+     *
+     * @param buildingID
+     * @return
+     */
+    public ArrayList<Room> getAllRoomsInBuilding(String buildingID) {
+        try {
+            return db.getAllRooms(buildingID);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public String getUserName(String userID){
+        try{
+            return db.getUserName(userID);
+        } catch (SQLException ex){
+          ex.printStackTrace();
+          return null;
+        }
+    }
 }
