@@ -1,6 +1,6 @@
 package de.uni_hannover.wb_interaktionen_1.test_db;
 
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+import com.mysql.jdbc.CommunicationsException;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
 import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 import de.uni_hannover.wb_interaktionen_1.logic.User;
