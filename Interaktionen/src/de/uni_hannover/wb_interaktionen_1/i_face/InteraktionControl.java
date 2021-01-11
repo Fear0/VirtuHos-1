@@ -1,4 +1,4 @@
-package de.uni_hannover.wb_interaktionen_1;
+package de.uni_hannover.wb_interaktionen_1.i_face;
 
 import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
