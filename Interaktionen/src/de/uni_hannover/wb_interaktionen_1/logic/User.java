@@ -137,7 +137,7 @@ public class User {
             if(web != null) {
                 web.close();
             }
-        } catch (org.openqa.selenium.WebDriverException ex){
+        } catch (WebDriverException ex){
             return;
         }
     }

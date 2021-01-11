@@ -23,7 +23,6 @@ public class Main extends Application{
     TestDB database;
     Login log;
     GUIMain g;
-    ErrorMessage err = new ErrorMessage();
 
     public static void main(String[] args) {
         launch(args);
@@ -101,13 +100,6 @@ public class Main extends Application{
         layout_main.getChildren().add(g.createMainGripPane2());
         layout_main.getChildren().add(g.createHallControl(window, this));
         window.setOnCloseRequest(e -> {
-            /*
-            if (log.getCurrentUser() != null) {
-                System.out.println("Setting current user in database to offline.");
-                log.getCurrentUser().getCurrent_room().leave_Room(log.currentUser, database, log.getCurrentUser().getCurrent_room().getId());
-                update_database.stopThread();
-                log.setCurrentUserOffline();
-            }*/
             g.confirmLogout(window, null);
             try {
                 database.closeConnection();

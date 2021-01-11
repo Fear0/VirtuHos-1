@@ -49,9 +49,10 @@ public class ThreadUpdate extends Thread{
 
     /** The constructor for the thread
      *
-     * @param list a ArrayList with all ListViews from the GUI
+     * @param g the GUI
      * @param db the database
      * @param login the login
+     * @param m the main class
      */
     private ThreadUpdate(GUIMain g, TestDB db, Login login, Main m){
         setDaemon(true);
@@ -78,7 +79,7 @@ public class ThreadUpdate extends Thread{
 
     @Override
     public void run(){
-        while (!this.isInterrupted() || !this.stop_flag){
+        while (!this.isInterrupted()){
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
@@ -125,13 +126,8 @@ public class ThreadUpdate extends Thread{
                             list_group.get(i).getItems().clear();
                             list_group.get(i).setItems(users_in_group_new.get(i));
                         }
-                        //users_in_room_old = users_in_room_new;
 
                         //Capacity Labels updaten
-                        System.out.println("OKOKOKOKOK");
-                        System.out.println(capacityl.size());
-                        System.out.println(users_in_room_new.size());
-                        System.out.println(rooms.size());
                         for(int i = 0; i < capacityl.size(); i++){
                             if(i == 0){
                                 capacityl.get(0).setText("Kapazität: " + users_in_room_new.get(0).size());
@@ -143,56 +139,12 @@ public class ThreadUpdate extends Thread{
                         }
 
                         //Check for a request to join a room
-
-                        if (login.getCurrentUser() != null) {
-                            User receiver = login.getCurrentUser();
-                            ArrayList<Request> request = db.getRequests(receiver);
-                            if (request.size() != 0) {
-                                Request r = request.get(0);
-                                if (r.getType().equals("join")) {
-                                    Room roomToJoin = db.getRoomWithRoomID(db.findRoomFor(r.getSender()), db);
-                                    r.createRequest(roomToJoin, rooms);
-                                } else if (r.getType().equals("reject")) {
-                                    r.createRejectMessage("join");
-                                } else if (r.getType().equals("webcam")) {
-                                    r.createWebcamRequest();
-                                } else if (r.getType().equals("rejectwebcam")) {
-                                    r.createRejectMessage("webcam");
-                                } else if (r.getType().equals("self")) {
-                                    for (Room room : rooms) {
-                                        if (room.getId() == db.findRoomFor(r.getSender())) {
-                                            //room.addUser(login.getCurrentUser());
-                                            ThreadOpenWindow open_window = new ThreadOpenWindow(login.getCurrentUser(), room);
-                                            open_window.start();
-
-                                        }
-                                    }
-                                }
-                                db.removeRequest(r.getSender(), receiver.getId());
-                            }
-                        }
-
-                        if (login.getCurrentUser() != null) {
-                            /* updating user in rooms; room name has to be room id, integer ... */
-                            for (Room room : rooms) {
-                                room.occupants = db.getAllUserInRoomAsUserList(room, db);
-                                System.out.print("RoomID: ");
-                                System.out.print(room.getId());
-                                System.out.print(" Occupants: ");
-                                System.out.print(room.occupants);
-                                System.out.println();
-                            }
-                            System.out.println();
-
-                            /* Set online_status_2 (ask Alan for the purpose) */
-                            db.updateOnline(login.getCurrentUser().getId());
-                        }
+                        checkRequest();
 
                     } catch (CommunicationsException ce) {
                         //reconnect to DB if communication fails
                         db.setComFailed(true);
                         System.out.println("Problem with Connection\n");
-
 
                     } catch (SQLException ex) {
                         if(!db.getComFailed()){
@@ -200,24 +152,83 @@ public class ThreadUpdate extends Thread{
                         }
                     }
                 }
-
-
             });
+
+
+            do{
+                try{
+                    sleep(TimeUnit.SECONDS.toMillis(2));
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }while(this.stop_flag);
 
             if(db.getComFailed() == true){
                 db.reconnect();
                 db.setComFailed(false);
             }
-            try{
-                sleep(TimeUnit.SECONDS.toMillis(2));
-            } catch (InterruptedException e){
-                e.printStackTrace();
-            }
+
         }
     }
 
     public void stopThread() {
         System.out.println("Update thread stop flag has been set.");
         this.stop_flag = true;
+    }
+    public void startThread() {
+        System.out.println("Update thread start flag has been set.");
+        this.stop_flag = false;
+    }
+
+    /**
+     * This methode checks for requests on the database to the current user
+     */
+    public void checkRequest(){
+        try {
+            ArrayList<Room> rooms = db.getAllRooms();
+            if (login.getCurrentUser() != null) {
+                User receiver = login.getCurrentUser();
+                ArrayList<Request> request = db.getRequests(receiver);
+                if (request.size() != 0) {
+                    Request r = request.get(0);
+                    if (r.getType().equals("join")) {
+                        Room roomToJoin = db.getRoomWithRoomID(db.findRoomFor(r.getSender()), db);
+                        r.createRequest(roomToJoin, rooms);
+                    } else if (r.getType().equals("reject")) {
+                        r.createRejectMessage("join");
+                    } else if (r.getType().equals("webcam")) {
+                        r.createWebcamRequest();
+                    } else if (r.getType().equals("rejectwebcam")) {
+                        r.createRejectMessage("webcam");
+                    } else if (r.getType().equals("self")) {
+                        for (Room room : rooms) {
+                            if (room.getId() == db.findRoomFor(r.getSender())) {
+                                //room.addUser(login.getCurrentUser());
+                                ThreadOpenWindow open_window = new ThreadOpenWindow(login.getCurrentUser(), room);
+                                open_window.start();
+
+                            }
+                        }
+                    }
+                    db.removeRequest(r.getSender(), receiver.getId());
+                }
+
+                /* updating user in rooms; room name has to be room id, integer ... */
+                for (Room room : rooms) {
+                    room.occupants = db.getAllUserInRoomAsUserList(room, db);
+                    System.out.print("RoomID: ");
+                    System.out.print(room.getId());
+                    System.out.print(" Occupants: ");
+                    System.out.print(room.occupants);
+                    System.out.println();
+                }
+                System.out.println();
+
+                /* Set online_status_2 (ask Alan for the purpose) */
+                db.updateOnline(login.getCurrentUser().getId());
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 }

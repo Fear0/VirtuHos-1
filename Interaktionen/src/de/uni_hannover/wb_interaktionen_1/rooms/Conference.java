@@ -74,7 +74,7 @@ public class Conference extends Room{
                 //current_meeting.joinMeetingWithWebcamAs(user, db, getId());
                 System.out.println("OKOOKOKOKOKOKO: " + getId() + "     " + db.getMeeting(getId()));
                 Meeting current_meeting = new Meeting(getType() + "_" + getId(), "test", "test");
-                user.openWebpage(current_meeting.joinMeetingWithCam(user, db.getMeeting(getId()), "test", user.getName()));
+                user.openWebpage(current_meeting.joinMeetingWithCam(user, db.getMeeting(getId()), "test", user.getName().replaceAll(" ", "_")));
             }
             return 0;
         }

@@ -55,6 +55,7 @@ public class BBBMeeting {
                         "&userdata-bbb_listen_only_mode=false";
 
         String response = this.CallAPI("join", queryString);
+
         return response;
         /*try {
             Desktop.getDesktop().browse(new URI(response));

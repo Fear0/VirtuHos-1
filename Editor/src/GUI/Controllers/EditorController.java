@@ -98,6 +98,8 @@ public class EditorController {
         }
         building.setGridState(false);
         DatabaseCommunication.saveDialog(building);
+        //TODO Hier in der Interaktion DB die Räume hinterlegen
+        //Mit einer Schleife alle Räume des Gebäudes (Gebäudename, Raumname, Typ) in der I1_DB hinterlegen)
     }
 
     //Lädt ein zuvor gespeichertes Gebäude

@@ -348,10 +348,6 @@ public class GUIMain {
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setHgap(10);
 
-        Insets in = new Insets(10,10,10,10);
-
-        ArrayList<ListView<String>> all_lists = new ArrayList<>();
-
         // Only used to display all users. Later only the online users have to be displayed. Then it can be removed
         Label startl = new Label("Offline Users");
         ObservableList<String> o = FXCollections.observableArrayList();
@@ -371,19 +367,6 @@ public class GUIMain {
         startlv.setOnDragOver(dragEvent -> dragOver(dragEvent, startlv, 0));
         startlv.setOnDragDropped(dragEvent -> dragDropped(dragEvent, startlv, 0, false));
         startlv.setOnDragDone(dragEvent -> dragDone(dragEvent,startlv, 0));
-
-        /* startlv.setOnMouseClicked(click -> {
-            System.out.println(click.getClickCount());
-            if (click.getClickCount() == 2) {
-                try {
-                    db.sendRequest(login.currentUser.getId(), startlv.getSelectionModel().getSelectedItem(), "webcam");
-                    ErrorMessage e = new ErrorMessage();
-                    e.createError("Die Anfrage zur Aktivierung der Webcam wurde erfolgreich an " + startlv.getSelectionModel().getSelectedItem() + " verschickt.");
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }); */
 
         all_listviews_room.add(startlv);
         grid.addColumn(0, startl, start_capacity, startlv);
@@ -413,15 +396,21 @@ public class GUIMain {
                 lv.setOnDragDone(dragEvent -> dragDone(dragEvent, lv, roomID));
                 grid.addColumn(i + 1, l, capacityl, lv);
 
+
+
                 lv.setOnMouseClicked(click -> {
+                    String[] s = lv.getSelectionModel().getSelectedItem().split("[\\(\\)]");
+                    String username = s[0];
+                    String userid = s[1];
                     if (click.getClickCount() == 2 && login.currentUser.getCurrent_room().isOffice()) {
                         try {
-                            if (db.getAllUserInRoom(login.currentUser.getCurrent_room().getId()).contains(lv.getSelectionModel().getSelectedItem())) {
+                            ArrayList<String> a = db.getAllUserInRoom(login.currentUser.getCurrent_room().getId());
+                            if (db.getAllUserInRoom(login.currentUser.getCurrent_room().getId()).contains(userid)) {
                                 System.out.println(lv.getSelectionModel().getSelectedItem());
                                 System.out.println("-----------------------------------------------------");
-                                db.sendRequest(login.currentUser.getId(), lv.getSelectionModel().getSelectedItem(), "webcam");
+                                db.sendRequest(login.currentUser.getId(), userid, "webcam");
                                 ErrorMessage e = new ErrorMessage();
-                                e.createError("Die Anfrage zur Aktivierung der Webcam wurde erfolgreich an " + lv.getSelectionModel().getSelectedItem() + " verschickt.");
+                                e.createError("Die Anfrage zur Aktivierung der Webcam wurde erfolgreich an " + username + " verschickt.");
                             }
                         } catch (SQLException ex) {
                             ex.printStackTrace();
@@ -433,9 +422,10 @@ public class GUIMain {
 
             } else {
                 int groupID = hall_groups.get(i - existent_rooms.size()).getId();
-                l = new Label("hall_group_" + hall_groups.get(i - existent_rooms.size()).getId());
-
+                l = new Label();
                 try {
+                    l.setText("hall_group_" + groupID + " (Hall: " + db.getCorrespondingHalltoHallGroup(groupID) + ")");
+
                     user_list = db.getAllUserInHallGroupObservable(groupID);
                 } catch (SQLException e){
                     e.printStackTrace();
@@ -491,16 +481,13 @@ public class GUIMain {
 
         Dragboard drag = event.getDragboard();
 
-        /*if(drag.hasContent(USER_LIST)){
-            ArrayList<String> list = (ArrayList<String>)drag.getContent(USER_LIST);
-            listView.getItems().addAll(list);
-            dragCompleted = true;
-        }*/
-
         String userID = new String();
+        String username = new String();
         if (drag.hasContent(USER_LIST)) {
             ArrayList<String> list = (ArrayList<String>) drag.getContent(USER_LIST);
-            userID = list.get(0);
+            String[] s = list.get(0).split("[\\(\\)]");
+            username = s[0];
+            userID = s[1];
         }
 
         if(userID.equals(login.currentUser.getId())) {
@@ -561,10 +548,10 @@ public class GUIMain {
                 if (db.getAllUserInRoom(roomID).size() < db.getRoomWithRoomID(roomID,db).getCapacity()) {
                     db.sendRequest(login.currentUser.getId(), userID, "join");
                     ErrorMessage e = new ErrorMessage();
-                    e.createError("Die Einladung wurde erfolgreich an " + userID + " verschickt.");
+                    e.createError("Die Einladung wurde erfolgreich an " + username + " verschickt.");
                 } else {
                     ErrorMessage e = new ErrorMessage();
-                    e.createError("Die Einladung wurde nicht an " + userID + " verschickt, weil der Raum bereits voll ist.");
+                    e.createError("Die Einladung wurde nicht an " + username + " verschickt, weil der Raum bereits voll ist.");
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();

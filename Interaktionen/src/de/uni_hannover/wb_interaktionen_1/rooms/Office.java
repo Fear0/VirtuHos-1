@@ -70,12 +70,13 @@ public class Office extends Room{
                 user.setCreator(false);
                 //current_meeting.joinMeetingAs(user, db, getId());
                 Meeting current_meeting = new Meeting(getType() + "_" + getId(), "test", "test");
-                user.openWebpage(current_meeting.joinMeeting(user, db.getMeeting(getId()), "test", user.getName()));
+                user.openWebpage(current_meeting.joinMeeting(user, db.getMeeting(getId()), "test", user.getName().replaceAll(" ", "_")));
                 //user.openWebpage(db.getMeeting(getId()));
             }
             return 0;
         }
     }
 
+    @Override
     public boolean isOffice() { return true; }
 }

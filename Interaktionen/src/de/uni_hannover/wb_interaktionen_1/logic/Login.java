@@ -52,7 +52,7 @@ public class Login {
             System.out.println("Valid");
             try{
                 db.loginOnline(userID);
-                setCurrentUser(new User(userID, userID, db.getRoomWithRoomID(0, db), null));
+                setCurrentUser(new User(userID, db.getUserName(userID), db.getRoomWithRoomID(0, db), null));
                 db.addUserToRoom(userID, 0);
                 return getCurrentUser();
             } catch (SQLException ex){
@@ -69,7 +69,10 @@ public class Login {
      */
     public void setCurrentUserOffline(){
         try{
-            if(db.userIsInDB(getCurrentUser().getName())) db.setOnlineStatus(getCurrentUser().getName(), false);
+            if(db.userIsInDB(getCurrentUser().getName())) {
+                db.setOnlineStatus(getCurrentUser().getName(), false);
+            }
+            threadUpdate.stopThread();
         } catch (SQLException ex){
             System.out.println("Error when trying to communicating with the database");
         }
@@ -124,34 +127,19 @@ public class Login {
      * @param next Next scene that will be displayed when the credentials are correct
      */
     public void switchScene(Stage window, String input, Scene next, GUIMain g, Main m){
-        currentUser = validateCredentials(input);
+        setCurrentUser(input);
         if(currentUser != null) {
             System.out.println("You are currently logged in as: " + this.currentUser.getName());
             threadUpdate = ThreadUpdate.getInstance(g, db, this, m);
             if (!threadUpdate.isAlive()) {
                 threadUpdate.start();
+            }else{
+                threadUpdate.startThread();
             }
             window.setScene(next);
         } else {
             System.out.println("ERROR");
         }
-    }
-
-
-    private ThreadUpdateData callUpdate() {
-        /* Initialize data */
-        try {
-            // Parse Rooms from DB
-            ArrayList<Room> rooms = this.db.getAllRooms();
-            /* Call update DB */
-            System.out.println(getCurrentUser().getName());
-            ThreadUpdateData update_database = new ThreadUpdateData(getCurrentUser(), rooms, getDB());
-            update_database.start();
-            return update_database;
-        } catch(SQLException ex) {
-            System.out.println("s");
-        }
-        return null;
     }
 
 
@@ -171,6 +159,13 @@ public class Login {
      */
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
+    }
+
+    /** Checks that the user has the permission to log into the system and sets the current user
+     * @param input Name of the user that will be set as the current user of the system
+     */
+    public void setCurrentUser(String input) {
+        this.currentUser = validateCredentials(input);
     }
 
 

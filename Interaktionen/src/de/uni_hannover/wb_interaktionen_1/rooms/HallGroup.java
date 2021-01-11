@@ -55,7 +55,7 @@ public class HallGroup {
             db.addUserToGroup(user.getId(), getId());
             meeting = new Meeting();
             user.setCurrent_meeting(meeting);
-            user.openWebpage(meeting.joinMeeting(db.getMeetingGroup(getId()), "test", user.getName()));
+            user.openWebpage(meeting.joinMeeting(db.getMeetingGroup(getId()), "test", user.getName().replaceAll(" ", "_")));
             //meeting.joinGroupAs(user, db, getId());
         }
         return 0;

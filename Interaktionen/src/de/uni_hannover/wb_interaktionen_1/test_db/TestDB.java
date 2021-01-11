@@ -34,7 +34,7 @@ public class TestDB {
     private boolean comFailed = false;
     //DB specific data for connection
     //final private String url = "jdbc:mysql://goethe.se.uni-hannover.de:3306/?user=Interaktion_1";
-    // final private String user = "Interaktion_1";
+    //final private String user = "Interaktion_1";
     //final private String password = "JVx;2brXZzFq";
 
     /* Change database name or table names here */
@@ -120,7 +120,7 @@ public class TestDB {
      * @author Meikel Kokowski
      * @deprecated
      * */
-    public void updateData(User user, ArrayList<Room> rooms, ThreadUpdateData thread) throws java.lang.InterruptedException, SQLException {
+    public void updateData(User user, ArrayList<Room> rooms, ThreadUpdateData thread) throws InterruptedException, SQLException {
         while(!thread.stop_flag) {
             /* updating user in rooms; room name has to be room id, integer ... */
             for(Room room : rooms) {
@@ -262,6 +262,15 @@ public class TestDB {
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setString(1, personalID);
         intermediate.executeUpdate();
+    }
+
+    public String getUserName(String personalID) throws SQLException {
+        String sql = "SELECT username FROM " + USER_TABLE + " WHERE personalID = ?";
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        intermediate.setString(1, personalID);
+        ResultSet results = intermediate.executeQuery();
+        results.next();
+        return results.getString("username");
     }
 
     /** Method to check if a user is already inside a meeting in BBB.
@@ -478,12 +487,12 @@ public class TestDB {
      */
     public ObservableList<String> getAllUserInRoomObservable(int roomID) throws SQLException {
         ObservableList<String> result = FXCollections.observableArrayList();
-        String sql = "SELECT personalID FROM " + USER_TABLE + " WHERE roomID = ?";
+        String sql = "SELECT * FROM " + USER_TABLE + " WHERE roomID = ?";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setInt(1, roomID);
         ResultSet user = intermediate.executeQuery();
         while(user.next()) {
-            result.add(user.getString("personalID"));
+            result.add(user.getString("username") + " (" + user.getString("personalID") + ")");
         }
         return result;
     }
@@ -495,11 +504,11 @@ public class TestDB {
      */
     public ObservableList<String> getAllUserWithoutRoomObservable() throws SQLException {
         ObservableList<String> result = FXCollections.observableArrayList();
-        String sql = "SELECT personalID FROM " + USER_TABLE + " WHERE roomID IS NULL";
+        String sql = "SELECT * FROM " + USER_TABLE + " WHERE roomID IS NULL";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         ResultSet user = intermediate.executeQuery();
         while(user.next()) {
-            result.add(user.getString("personalID"));
+            result.add(user.getString("username") + " (" + user.getString("personalID") + ")");
         }
         return result;
     }
@@ -512,12 +521,12 @@ public class TestDB {
      */
     public ObservableList<String> getAllUserInHallGroupObservable(int groupID) throws SQLException {
         ObservableList<String> result = FXCollections.observableArrayList();
-        String sql = "SELECT personalID FROM " + USER_TABLE + " WHERE groupID = ?";
+        String sql = "SELECT * FROM " + USER_TABLE + " WHERE groupID = ?";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setInt(1, groupID);
         ResultSet user = intermediate.executeQuery();
         while(user.next()) {
-            result.add(user.getString("personalID"));
+            result.add(user.getString("username") + " (" + user.getString("personalID") + ")");
         }
         return result;
     }
@@ -531,7 +540,7 @@ public class TestDB {
         while(users.next()) {
             result.add(new User(
                     users.getString("personalID"),
-                    users.getString("personalID"),
+                    users.getString("username"),
                     room, null));
         }
         return result;
@@ -546,7 +555,7 @@ public class TestDB {
         while(users.next()) {
             result.add(new User(
                     users.getString("personalID"),
-                    users.getString("personalID"),
+                    users.getString("username"),
                     this.getRoomWithRoomID(users.getInt("roomID"), this), group));
         }
         return result;
@@ -676,14 +685,13 @@ public class TestDB {
      * Note: The roomID is generated automatically and returned by this function!
      *
      * @param capacity : max size of the conference; the capacity of people to fit inside
-     * @param meeting_url : a meeting url to be assigned to the room; null if there is none
      * @return the ID of the created room.
      * @throws SQLException: : In case of query failure due to external issues in DB or if
      *                         someone changed one of the column names in the DB
      *                         If none of the above cases, auto_increment may not be able to create a new value
      * @author Meikel Kokowski
      * */
-    public int createConference(int capacity, String meeting_url) throws SQLException  {
+    public int createConference(int capacity) throws SQLException  {
         int new_room_id = this.createRoom(capacity, "conference");
         String sql = "INSERT INTO " + CONFERENCE_TABLE + " (roomID) VALUES (?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
@@ -1075,107 +1083,6 @@ public class TestDB {
 
     public void setComFailed(boolean comFailed) {
         this.comFailed = comFailed;
-    }
-
-    public static void main(String[] args) {
-        TestDB db = new TestDB();
-        try {
-            // Loops endlessly; uncomment if you want to check out the other examples
-            //User user = new User("mei.kokowski", "sobin", null);
-            //db.update_data(user, null);
-
-            /* Some example calls */
-            System.out.println(db.getAllUserInDB());
-
-            /* Set online status and check if user is online */
-            db.setOnlineStatus("mei.kokowski", true);
-            db.setOnlineStatus("mei.kokowski", false);
-            //System.out.println(db.userIsOnline("mei.kokowski"));
-            //System.out.println(db.userIsOnline("mar.deichsel"));
-
-            /* Add and delete user */
-            db.addUser("max.müller", false);
-            db.deleteUser("max.müller");
-
-            /* Check if user is known to DB */
-            //System.out.println(db.userIsInDB("mei.kokowski"));
-
-            /* Set and get ping */
-            //db.setPingFor("dav.sasse", true);
-            //db.setPingFor("dav.sebode", true);
-            //System.out.println(db.userHasToJoinMeeting("dav.sasse"));
-            //System.out.println(db.userHasToJoinMeeting("mei.kokowski"));
-
-            /* delete ping */
-            //db.setPingFor("dav.sasse", false);
-            //db.setPingFor("dav.sebode", false);
-
-            /* Each time you make a call a new room will definitely be added, so be careful uncommenting */
-            // Create new room
-            //System.out.println("The room ID of the new room is: ");
-            // room ID is yield:
-            // System.out.println(db.createHall(200));
-            // System.out.println(db.createConference(6));
-            // System.out.println(db.createOffice(6));
-
-            /* Set meeting & get meeting */
-            db.setMeeting(4, "https://bbb04.elearning.uni-hannover.de/html5client/join?sessionToken=test_url");
-            //System.out.println("Room with ID 1 has meeting: " + Boolean.toString(db.hasMeeting(1)));
-            //System.out.println(db.getMeeting(1));
-            System.out.print("Has meeting: ");
-            System.out.print(db.hasMeeting(4));
-            System.out.println(" should be true");
-
-            /* detach meeting from room */
-            db.setMeeting(4, null);
-            System.out.print("Has meeting: ");
-            System.out.print(db.hasMeeting(4));
-            System.out.println(" should be false");
-            //System.out.println("Room with ID 1 has meeting: " + Boolean.toString(db.hasMeeting(1)));
-            //System.out.println(db.getMeeting(1));
-
-            /*for(Room room : db.getAllRooms()) {
-                System.out.print("Room with ID: ");
-                System.out.print(room.getId());
-                System.out.print(" Capacity: ");
-                System.out.print(room.getCapacity());
-                System.out.print(" Type: ");
-                System.out.print(room.getType());
-                System.out.println();
-            }*/
-
-            //db.createConference(10, null);
-
-            /* Check if a user is inside a meeting */
-            System.out.print("Inside meeting: ");
-            System.out.println(db.userIsInMeeting("mar.deichsel"));
-
-            /* Send a request */
-            db.sendRequest("mei.kokowski", "jos.berger", "join");
-            /* Get all requests for a person */
-            System.out.print("User that sent a request: ");
-            //System.out.println(db.getRequests("jos.berger"));
-            /* User has pending requests */
-            System.out.println(db.hasRequest("jos.berger"));
-            /* remove request */
-            db.removeRequest("mei.kokowski", "jos.berger");
-
-            /* Increment access counter for a file / create access-instance */
-            //db.addDocument("www.test_document_aaa.de", 5);
-            //db.incrementAccessCounter("mei.kokowski", "www.test_document_aaa.de");
-
-            //db.createStartHall(200);
-
-            System.out.println(db.getRoomWithRoomID(0, db));
-
-            db.createConference(2, null);
-
-        } catch(SQLException ex) {
-            ex.printStackTrace();
-        } /*catch(InterruptedException ex) {
-            System.out.println("An error occurred with the Threads");
-        }*/
-
     }
 
     public void closeConnection() throws SQLException{

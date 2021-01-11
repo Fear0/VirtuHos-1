@@ -25,6 +25,7 @@ public class Request {
     private TestDB db;
     private User current_user;
     private String sender;
+    private String sender_name;
     private String type;
 
     /** The constructor for a request.
@@ -39,6 +40,11 @@ public class Request {
         this.current_user = receiver;
         this.sender = sender;
         this.type = type;
+        try {
+            this.sender_name = db.getUserName(sender);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     /** The getter for the sender.
@@ -65,7 +71,7 @@ public class Request {
     public void createRequest(Room room, ArrayList<Room> rooms){
         Stage popup = new Stage();
         VBox vBox = new VBox();
-        Label infotext = new Label(sender + " hat sie in den Raum " + room.getType() + "_" + room.getId() + " eingeladen.");
+        Label infotext = new Label(sender_name + " hat sie in den Raum " + room.getType() + "_" + room.getId() + " eingeladen.");
         Label timer_l = new Label();
 
         Timer timer = new Timer();
@@ -114,9 +120,9 @@ public class Request {
     public void createRejectMessage(String type){
         ErrorMessage m = new ErrorMessage();
         if (type.equals("join")) {
-            m.createError(sender + " hat ihre Einladung abgelehnt oder ihre Einladung ist abgelaufen.");
-        } else if (type.equals("join")){
-            m.createError(sender + " hat ihre Anfrage zur Aktivierung der Webcam abgelehnt oder ihre Anfrage ist abgelaufen.");
+            m.createError(sender_name + " hat ihre Einladung abgelehnt oder ihre Einladung ist abgelaufen.");
+        } else if (type.equals("webcam")) {
+            m.createError(sender_name + " hat ihre Anfrage zur Aktivierung der Webcam abgelehnt oder ihre Anfrage ist abgelaufen.");
         }
     }
 
@@ -160,7 +166,7 @@ public class Request {
     public void createWebcamRequest(){
         Stage popup = new Stage();
         VBox vBox = new VBox();
-        Label infotext = new Label(sender + " hat sie aufgefordert, ihre Webcam anzuschalten.");
+        Label infotext = new Label(sender_name + " hat sie aufgefordert, ihre Webcam anzuschalten.");
         Label timer_l = new Label();
 
         Timer timer = new Timer();
