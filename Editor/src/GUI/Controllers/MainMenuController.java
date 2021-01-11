@@ -34,6 +34,7 @@ public class MainMenuController {
 
     //Beendet das Programm
     public void onEndClick() {
+        IC.logout();
         System.exit(0);
     }
 
