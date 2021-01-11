@@ -111,12 +111,13 @@ public class InteraktionControl {
      *  Logs out the user.
      */
     public void logout(){
-        if(login.getCurrentUser().getCurrent_room() != null){
-            login.getCurrentUser().getCurrent_room().leave_Room(login.currentUser, db, login.getCurrentUser().getCurrent_room().getId());
+        if(login.getCurrentUser() !=null) {
+            if (login.getCurrentUser().getCurrent_room() != null) {
+                login.getCurrentUser().getCurrent_room().leave_Room(login.currentUser, db, login.getCurrentUser().getCurrent_room().getId());
+            }
+            login.setCurrentUserOffline();
+            login.resetCurrentUser();
         }
-        login.setCurrentUserOffline();
-        login.resetCurrentUser();
-
     }
 
     /** Sends a request to another user to turn on the webcam.
