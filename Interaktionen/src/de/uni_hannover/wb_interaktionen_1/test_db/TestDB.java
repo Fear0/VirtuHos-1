@@ -1,19 +1,17 @@
 package de.uni_hannover.wb_interaktionen_1.test_db;
+
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+import de.uni_hannover.wb_interaktionen_1.gui.Request;
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
+import de.uni_hannover.wb_interaktionen_1.logic.User;
+import de.uni_hannover.wb_interaktionen_1.rooms.*;
+import de.uni_hannover.wb_interaktionen_1.threads.ThreadUpdateData;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
-/* From this project */
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
-import de.uni_hannover.wb_interaktionen_1.Main;
-import de.uni_hannover.wb_interaktionen_1.gui.Request;
-import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
-import de.uni_hannover.wb_interaktionen_1.threads.ThreadUpdateData;
-import de.uni_hannover.wb_interaktionen_1.logic.Login;
-import de.uni_hannover.wb_interaktionen_1.logic.User;
-import de.uni_hannover.wb_interaktionen_1.rooms.*;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 /** TestDB class. An instance of this class will let you retrieve data from the Database without using any SQL.
  * You should handle the SQLException as this class only passes the exception to the caller.
@@ -670,11 +668,12 @@ public class TestDB {
      *                         If none of the above cases, auto_increment may not be able to create a new value
      * @author Meikel Kokowski
      * */
-    private int createRoom(int size, String type) throws SQLException {
-        String sql = "INSERT INTO " + ROOM_TABLE + " (capacity, type) VALUES (?, ?)";
+    private int createRoom(int size, String type, String building_name) throws SQLException {
+        String sql = "INSERT INTO " + ROOM_TABLE + " (capacity, type, building_name) VALUES (?, ?, ?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         intermediate.setInt(1, size);
         intermediate.setString(2, type);
+        intermediate.setString(3, building_name);
         intermediate.executeUpdate();
         ResultSet result = intermediate.getGeneratedKeys();
         result.next();
@@ -691,8 +690,8 @@ public class TestDB {
      *                         If none of the above cases, auto_increment may not be able to create a new value
      * @author Meikel Kokowski
      * */
-    public int createConference(int capacity) throws SQLException  {
-        int new_room_id = this.createRoom(capacity, "conference");
+    public int createConference(int capacity, String building_name) throws SQLException  {
+        int new_room_id = this.createRoom(capacity, "conference", building_name);
         String sql = "INSERT INTO " + CONFERENCE_TABLE + " (roomID) VALUES (?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setInt(1, new_room_id);
@@ -710,8 +709,8 @@ public class TestDB {
      *                         If none of the above cases, auto_increment may not be able to create a new value
      * @author Meikel Kokowski
      * */
-    public int createOffice(int capacity) throws SQLException  {
-        int new_room_id = this.createRoom(capacity, "office");
+    public int createOffice(int capacity, String building_name) throws SQLException  {
+        int new_room_id = this.createRoom(capacity, "office", building_name);
         String sql = "INSERT INTO " + OFFICE_TABLE + " (roomID) VALUES (?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setInt(1, new_room_id);
@@ -729,8 +728,8 @@ public class TestDB {
      *                         If none of the above cases, auto_increment may not be able to create a new value
      * @author Meikel Kokowski
      * */
-    public int createHall(int capacity) throws SQLException  {
-        int new_room_id = this.createRoom(capacity, "hall");
+    public int createHall(int capacity, String building_name) throws SQLException  {
+        int new_room_id = this.createRoom(capacity, "hall", building_name);
         String sql = "INSERT INTO " + HALL_TABLE + " (roomID) VALUES (?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setInt(1, new_room_id);
@@ -747,23 +746,16 @@ public class TestDB {
      *                         a room with ID=0 may already exist
      * @author Meikel Kokowski
      * */
-    public int createStartHall(int capacity) throws SQLException  {
-        /* Has to be set so DB does not interpret '0' as a command to calculate the next auto_increment */
-        String constraint = "SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO'";
-        this.executeQuery(constraint);
+    public int createStartHall(int capacity, String building_name) throws SQLException  {
         /* Create normal room */
-        String sql = "INSERT INTO " + ROOM_TABLE + " (roomID, capacity, type) VALUES (?, ?, ?)";
+        int roomID = this.createRoom(capacity, "hall", building_name);
+        String sql = "INSERT INTO " + HALL_TABLE + " (roomID, start_room) VALUES (?, ?)";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
-        intermediate.setInt(1, 0);
-        intermediate.setInt(2, capacity);
-        intermediate.setString(3, "hall");
+        intermediate.setInt(1, roomID);
+        intermediate.setBoolean(2, true);
         intermediate.executeUpdate();
         /* Create hall */
-        sql = "INSERT INTO " + HALL_TABLE + " (roomID) VALUES (?)";
-        intermediate = dbConnection.prepareStatement(sql);
-        intermediate.setInt(1, 0);
-        intermediate.executeUpdate();
-        return 0;
+        return roomID;
     }
 
     /** Method to create a Group for the hall in the DB.

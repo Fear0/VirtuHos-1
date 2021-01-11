@@ -35,14 +35,14 @@ public class InteraktionControl {
      * @param capacity The maximum number of users in the room.
      * @param type The type of the room (office, conference or hall).
      */
-    public void addRoom(int capacity, String type){
+    public void addRoom(int capacity, String type, String buildingID){
         try{
             if(type.equals("office")){
-                db.createOffice(capacity);
+                db.createOffice(capacity, buildingID);
             } else if(type.equals("conference")){
-                db.createConference(capacity);
+                db.createConference(capacity, buildingID);
             } else if(type.equals("hall")){
-                db.createHall(capacity);
+                db.createHall(capacity, buildingID);
             }
         } catch (SQLException e){
             e.printStackTrace();
