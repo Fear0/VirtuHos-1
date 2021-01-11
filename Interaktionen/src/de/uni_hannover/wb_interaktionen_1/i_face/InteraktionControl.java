@@ -30,23 +30,37 @@ public class InteraktionControl {
         this.db = db;
     }
 
-    /** This methode adds new romms to the database.
+    /** This methode adds new rooms to the database.
      *
      * @param capacity The maximum number of users in the room.
      * @param type The type of the room (office, conference or hall).
+     * @return Returns the room ID if the add was successful, on error -1 is returned.
      */
-    public void addRoom(int capacity, String type, String buildingID){
-        try{
+    public int addRoom(int capacity, String type, String buildingID){
+        try{ //Try adding the building first and then the room
+            db.addBuilding(buildingID);
             if(type.equals("office")){
-                db.createOffice(capacity, buildingID);
+                return db.createOffice(capacity, buildingID);
             } else if(type.equals("conference")){
-                db.createConference(capacity, buildingID);
+                return db.createConference(capacity, buildingID);
             } else if(type.equals("hall")){
-                db.createHall(capacity, buildingID);
+                return db.createHall(capacity, buildingID);
             }
-        } catch (SQLException e){
-            e.printStackTrace();
+        } catch (SQLException exception){ //Catch the exception the DB throws if a building with that name already exists
+            try{ // Add the rooms normally without creating the building
+                if(type.equals("office")){
+                    return db.createOffice(capacity, buildingID);
+                } else if(type.equals("conference")){
+                    return db.createConference(capacity, buildingID);
+                } else if(type.equals("hall")){
+                    return db.createHall(capacity, buildingID);
+                }
+            } catch (SQLException e){
+                e.printStackTrace();
+                return -1;
+            }
         }
+        return -1;
     }
 
     /** Adds groups in the hall to the database.
@@ -248,8 +262,17 @@ public class InteraktionControl {
         try{
             return db.getUserName(userID);
         } catch (SQLException ex){
-          ex.printStackTrace();
-          return null;
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public void deleteBuilding(String buildingID){
+        try{
+            db.deleteBuilding(buildingID);
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            return;
         }
     }
 }

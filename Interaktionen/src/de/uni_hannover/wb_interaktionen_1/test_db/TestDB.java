@@ -1,6 +1,6 @@
 package de.uni_hannover.wb_interaktionen_1.test_db;
 
-import com.mysql.jdbc.CommunicationsException;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
 import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 import de.uni_hannover.wb_interaktionen_1.logic.User;
@@ -46,6 +46,7 @@ public class TestDB {
     final private String REQUEST_TABLE = DATABASE_NAME + "i1_request";
     final private String DOCUMENT_TABLE = DATABASE_NAME + "i1_document";
     final private String ACCESSES_TABLE = DATABASE_NAME + "i1_accesses";
+    final private String BUILDING_TABLE = DATABASE_NAME + "i1_building";
 
     public TestDB() {
         try {
@@ -1101,6 +1102,22 @@ public class TestDB {
         intermediate.setString(2, document_url);
         ResultSet res = intermediate.executeQuery();
         return res.next() ? res.getInt("times") : 0;
+    }
+
+    // building
+    public void addBuilding(String building_name) throws SQLException {
+        String building = "INSERT INTO " + BUILDING_TABLE + " (building_name) VALUES (?);";
+        PreparedStatement pstm = dbConnection.prepareStatement(building);
+        pstm.setString(1, building_name);
+        pstm.executeUpdate();
+    }
+
+    // building
+    public void deleteBuilding(String building_name) throws SQLException {
+        String building = "DELETE FROM " + BUILDING_TABLE + " WHERE building_name = ?";
+        PreparedStatement pstm = dbConnection.prepareStatement(building);
+        pstm.setString(1, building_name);
+        pstm.executeUpdate();
     }
 
     public boolean getComFailed(){
