@@ -639,6 +639,40 @@ public class TestDB {
         return res;
     }
 
+    /** Creates a list with all rooms by building_name
+     *
+     * @return the ArrayList with all rooms in specified building
+     * @throws SQLException: : In case of query failure due to external issues in DB or if
+     *                         someone changed one of the column names in the DB
+     * @author Meikel Kokowski
+     */
+    public ArrayList<Room> getAllRooms(String building_name) throws SQLException {
+        ArrayList<Room> res = new ArrayList<>();
+        String sql = "SELECT * FROM " + ROOM_TABLE + " WHERE building_name = ?;";
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        intermediate.setString(1, building_name);
+        ResultSet rooms = executeQuery(sql);
+        while(rooms.next()) {
+            if(rooms.getString("type").equals("office")){
+                res.add(new Office(
+                        rooms.getInt("roomID"),
+                        rooms.getInt("capacity"),
+                        this));
+            } else if(rooms.getString("type").equals("conference")){
+                res.add(new Conference(
+                        rooms.getInt("roomID"),
+                        rooms.getInt("capacity"),
+                        this));
+            } else if(rooms.getString("type").equals("hall")){
+                res.add(new Hall(
+                        rooms.getInt("roomID"),
+                        rooms.getInt("capacity"),
+                        this));
+            }
+        }
+        return res;
+    }
+
     /** Creates a list with all groups in the hall
      *
      * @return the ArrayList with all groups
