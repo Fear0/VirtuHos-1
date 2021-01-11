@@ -1,6 +1,9 @@
 package GUI.Controllers;
 
 import GUI.MainMenu;
+import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
+import de.uni_hannover.wb_interaktionen_1.logic.Login;
+import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
 import definitions.DatabaseCommunication;
 import definitions.Text;
 import javafx.fxml.FXML;
@@ -13,7 +16,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
 
+
 public class MainMenuController {
+
+
+    private InteraktionControl IC;
+    private ShowController SC;
 
     private @FXML TextField userField;
 
@@ -30,7 +38,7 @@ public class MainMenuController {
     }
 
     //Wechselt aus dem Hauptmenü in den Anzeigemodus
-    public void onShowClicked() {
+    public void onShowClicked() throws IOException{
         String username = DatabaseCommunication.getUsername();
         if (username == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, Text.MAIN_MENU_CONTROLLER_NO_USERNAME);
@@ -41,6 +49,8 @@ public class MainMenuController {
         } else {
             MainMenu.getShowController().setUsername(username);
             MainMenu.primaryStage.setScene(MainMenu.show);
+            ShowController ctrl = MainMenu.getShowController();
+            ctrl.setIC(IC);
         }
     }
 
@@ -50,6 +60,8 @@ public class MainMenuController {
         Parent parent = fxmlLoader.load();
         LoginController ctrl = fxmlLoader.getController();
         ctrl.setMainUsrField(userField);
+        ctrl.setIC(IC);
+        ctrl.setSC(SC);
         Scene scene = new Scene(parent, 400, 200);
         Stage stage = new Stage();
         stage.setTitle("VirtuHoS Login");
@@ -57,5 +69,13 @@ public class MainMenuController {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setScene(scene);
         stage.showAndWait();
+    }
+
+    public void setIC(InteraktionControl IC) {
+        this.IC = IC;
+    }
+
+    public void setSC(ShowController SC){
+        this.SC =SC;
     }
 }

@@ -58,4 +58,6 @@ public class Text {
     public static final String SHOW_CONTROLLER_ROOM_LOCKED = "Dieser Raum ist abgeschlossen. Wollen sie ihn trotzdem betreten?";
     public static final String SHOW_CONTROLLER_NO_FREE_CHAIR = "In diesem Raum gibt es keinen freien Stuhl. Bitte wählen SIe einen anderen Raum aus oder warten Sie bis ein Platz frei wird.";
     public static final String SHOW_CONTROLLER_CHAIR_NOT_FREE = "Dieser Stuhl ist besetzt.";
+
+    public static final String LOGIN_CONTROLLER_LOGIN_ERROR = "ID nicht bekannt";
 }

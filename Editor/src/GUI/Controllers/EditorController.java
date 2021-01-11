@@ -1,4 +1,5 @@
 package GUI.Controllers;
+import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -40,6 +41,8 @@ public class EditorController {
     private @FXML ToggleButton grid;
     private @FXML VBox vBox;
     private SelectionController selectionController;
+
+    private InteraktionControl IC;
 
     public void initialize() {
         if (myPane != null) {
@@ -96,15 +99,27 @@ public class EditorController {
                 return;
             }
         }
+
         building.setGridState(false);
         DatabaseCommunication.saveDialog(building);
         //TODO Hier in der Interaktion DB die Räume hinterlegen
         //Mit einer Schleife alle Räume des Gebäudes (Gebäudename, Raumname, Typ) in der I1_DB hinterlegen)
+        IC.deleteBuilding(building.getName());
+        for (Room room : building.getRooms()){
+            if(room.getType() == RoomType.HALL) {
+                room.setInteraktionsRoomID(IC.addRoom(160,"hall",building.getName()));
+            }else if(room.getType() == RoomType.MEETING_ROOM){
+                room.setInteraktionsRoomID(IC.addRoom(room.getChairs().size(),"conference",building.getName()));
+            }else{
+                room.setInteraktionsRoomID(IC.addRoom(room.getChairs().size(),"office",building.getName()));
+            }
+        }
+        DatabaseCommunication.replace(building,building.getName());
     }
 
     //Lädt ein zuvor gespeichertes Gebäude
     public void onLoadClicked() throws SQLException {
-        Building tempBuilding = DatabaseCommunication.loadDialog();
+        Building tempBuilding = DatabaseCommunication.loadDialog(IC);
         if (tempBuilding != null) building = tempBuilding;
         building.redraw(canvas, false);
     }
@@ -623,5 +638,9 @@ public class EditorController {
                 mode == EditorMode.SELECTION_TO_HALL)
             return;
         selectionController.clearSelection();
+    }
+
+    public void setIC(InteraktionControl IC) {
+        this.IC = IC;
     }
 }

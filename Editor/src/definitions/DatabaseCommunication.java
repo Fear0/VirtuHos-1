@@ -1,5 +1,6 @@
 package definitions;
 
+import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
@@ -109,13 +110,13 @@ public final class DatabaseCommunication {
     }
 
     //Dialog zum Laden eines Gebäudes
-    public static Building loadDialog() throws SQLException {
+    public static Building loadDialog(InteraktionControl IC) throws SQLException {
         String name = DatabaseCommunication.selectNameDialog();
-        return DatabaseCommunication.loadDialog(name);
+        return DatabaseCommunication.loadDialog(name, IC);
     }
 
     //load with a given name instead of asking
-    public static Building loadDialog(String name) throws SQLException {
+    public static Building loadDialog(String name, InteraktionControl IC) throws SQLException {
         if (name == null || name.equals("")) return null;
         Building building = null;
         try (PreparedStatement preparedStatement = connection.prepareStatement(LOAD_BUILDING)) {
@@ -137,6 +138,7 @@ public final class DatabaseCommunication {
                         preparedStatement1.setString(1, name);
                         preparedStatement1.executeUpdate();
                     }
+                    IC.deleteBuilding(name);
                 }
             }
         }

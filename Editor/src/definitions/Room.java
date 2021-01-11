@@ -25,6 +25,7 @@ public class Room extends EditorObject {
     private double gridSize = 30;
     private boolean nameState = false;
     private boolean isLocked = false;
+    private int InteraktionsRoomID;
 
     public Room(double x, double y, double w, double h) {
         super(x, y, w, h);
@@ -396,4 +397,13 @@ public class Room extends EditorObject {
         double size = min(this.getWidth()/8, this.getHeight()/8);
         return x < size && y < size;
     }
+
+    public void setInteraktionsRoomID(int id){
+        this.InteraktionsRoomID = id;
+    }
+
+     public int getInteraktionsRoomID(){
+        return this.InteraktionsRoomID;
+     }
+
 }

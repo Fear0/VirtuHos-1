@@ -1,6 +1,7 @@
 package GUI.Controllers;
 
 import GUI.MainMenu;
+import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -28,6 +29,8 @@ public class ShowController {
     private String buildingName;
     private Person transferPerson;
     private BuildingThread thread;
+    private InteraktionControl IC;
+    private String ID;
 
 
     public void setUsername(String n) {
@@ -51,7 +54,7 @@ public class ShowController {
     //Lädt ein Gebäude und zeigt es an
     public void onLoadClicked() throws SQLException {
         //get the name of the building in the database and save it in buildingname
-        building = DatabaseCommunication.loadDialog();
+        building = DatabaseCommunication.loadDialog(IC);
         if (building != null){
             removeUser();
             new Building().redraw(showCanvas, true);
@@ -88,7 +91,7 @@ public class ShowController {
 
     public void onCanvasClicked(MouseEvent mouseEvent) {
         try {
-            building = DatabaseCommunication.loadDialog(buildingName);
+            building = DatabaseCommunication.loadDialog(buildingName,IC);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -153,6 +156,8 @@ public class ShowController {
                 Person tempPerson = new Person(this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
                         mouseEvent.getY() - (0.5 * building.getGridSize()));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                //TODO hier hallen gruppenerstellung
+                InteraktionMovePerson(room, false);
                 building.redraw(showCanvas, true);
             } else {
                 Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX() - room.getCoordinateX(),
@@ -162,6 +167,7 @@ public class ShowController {
                         Person tempPerson = new Person(this.username, chair.getCoordinateX() + room.getCoordinateX(),
                                 chair.getCoordinateY() + room.getCoordinateY());
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                        InteraktionMovePerson(room, false);
                         building.redraw(showCanvas, true);
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -177,6 +183,7 @@ public class ShowController {
                                 tempChair.getCoordinateX() + room.getCoordinateX(),
                                 tempChair.getCoordinateY() + room.getCoordinateY());
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                        InteraktionMovePerson(room, false);
                         building.redraw(showCanvas, true);
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -236,6 +243,23 @@ public class ShowController {
             }
         }
     }*/
+
+    public void setIC(InteraktionControl IC) {
+        this.IC = IC;
+    }
+
+    public InteraktionControl getIC(){
+        return this.IC;
+    }
+
+    private void InteraktionMovePerson(Room room, boolean halle){
+        //System.out.println(room.getInteraktionsRoomID());
+        IC.moveUser(this.ID,room.getInteraktionsRoomID(),halle);
+    }
+
+    public void setID(String ID){
+        this.ID = ID;
+    }
 }
 
 class BuildingThread implements Runnable{
@@ -250,15 +274,18 @@ class BuildingThread implements Runnable{
 
     @Override
     public void run() {
+        InteraktionControl IC = cont.getIC();
         while(!exit){
             //replace this print with logic to update a building
             //System.out.println("in the thread for: " + buildingName);
             try {
-                newBuilding = DatabaseCommunication.loadDialog(buildingName);
+                newBuilding = DatabaseCommunication.loadDialog(buildingName, IC);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
             cont.setBuilding(newBuilding);
+
+            IC.checkRequest();
 
             //wait 5 sec
             try {
@@ -266,6 +293,7 @@ class BuildingThread implements Runnable{
             } catch (InterruptedException e) {
                 System.out.println("thread interrupted");
             }
+
         }
         //System.out.println("thread ended for: " + buildingName);
     }
@@ -277,4 +305,5 @@ class BuildingThread implements Runnable{
     public void setBuildingname(String buildingname) {
         this.buildingName = buildingname;
     }
+
 }
