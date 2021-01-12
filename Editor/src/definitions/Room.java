@@ -20,31 +20,20 @@ import static java.lang.Math.abs;
 public class Room extends EditorObject {
     private String name;
     private RoomType roomtype = RoomType.NONE;
-    private ArrayList<Table> tables;
-    private ArrayList<Chair> chairs;
-    private double gridSize = 30;
+    private ArrayList<Table> tables = new ArrayList<>();
+    private ArrayList<Chair> chairs = new ArrayList<>();
+    private final double gridSize;
     private boolean nameState = false;
-    private boolean isLocked = false;
     private int InteraktionsRoomID;
 
-    public Room(double x, double y, double w, double h) {
+    public Room(double x, double y, double w, double h, double gridSize) {
         super(x, y, w, h);
-        tables = new ArrayList<>();
-        chairs = new ArrayList<>();
-    }
-
-    public Room(String name, double x, double y, double w, double h) {
-        super(x, y, w, h);
-        this.name = name;
-        tables = new ArrayList<>();
-        chairs = new ArrayList<>();
+        this.gridSize = gridSize;
     }
 
     public Room(String name, double x, double y, double w, double h, double gridSize) {
         super(x, y, w, h);
         this.name = name;
-        tables = new ArrayList<>();
-        chairs = new ArrayList<>();
         this.gridSize = gridSize;
     }
 
@@ -69,12 +58,6 @@ public class Room extends EditorObject {
         this.name = name;
     }
 
-    public void setLocked(boolean b) {
-        this.isLocked = b;
-    }
-    public boolean getLocked() {
-        return this.isLocked;
-    }
 
 
     //Zeichnet den Raum
@@ -117,59 +100,6 @@ public class Room extends EditorObject {
         }
     }
 
-    //draws lock symbols for the room indicating if the room is open or closed
-    public void drawWithLock(Canvas c) {
-        GraphicsContext gc = c.getGraphicsContext2D();
-
-        double x1 = getCoordinateX();
-        double x2 = x1 + getWidth();
-        double y1 = getCoordinateY();
-        double y2 = y1 + getHeight();
-        double x = Double.min(x1, x2);
-        double y = Double.min(y1, y2);
-        double w = abs(getWidth());
-        double h = abs(getHeight());
-        gc.setFill(Color.rgb(0, 0, 0, 1));
-        if (y == y1)gc.fillText(this.name, x,y + this.getHeight() -3);
-        if (y == y2)gc.fillText(this.name, x,y - this.getHeight() -3);
-
-        switch (roomtype) {
-            case OFFICE -> gc.setFill(Color.rgb(238, 232, 170, 0.7));
-            case MEETING_ROOM -> gc.setFill(Color.rgb(188, 143, 143, 0.7));
-            case HALL -> gc.setFill(Color.rgb(148, 0, 211, 0.7));
-            default -> gc.setFill(Color.rgb(200,200,200,0.7));
-        }
-        gc.strokeRect(x, y, w, h);
-        gc.fillRect(x, y, w, h);
-
-        //draw lock symbols here
-        if (this.getType() != RoomType.HALL) {
-            try {
-                BufferedImage lock = ImageIO.read(new File("openlock.png"));
-                if (this.isLocked) {
-                    lock = ImageIO.read(new File("closedlock.png"));
-                }
-                Image image = SwingFXUtils.toFXImage(lock,null);
-                double size = min(w/8, h/8);
-                gc.drawImage(image, x, y, size, size);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        if (tables != null) {
-            for (Table table : tables) {
-                table.draw(c, getCoordinateX(), getCoordinateY());
-            }
-        }
-
-        if (chairs != null) {
-            for (Chair chair : chairs) {
-                chair.draw(c,this.getCoordinateX(), this.getCoordinateY());
-            }
-        }
-    }
 
     public void setType(RoomType roomtype) {
         this.roomtype = roomtype;
@@ -345,12 +275,6 @@ public class Room extends EditorObject {
         }
     }
 
-    public double getGridSize() {
-        return gridSize;
-    }
-    public void setGridSize(double gridSize) {
-        this.gridSize = gridSize;
-    }
 
     //returns true if the given room touches this room at any wall
     //two corners touching each other counts as a touch
@@ -394,16 +318,16 @@ public class Room extends EditorObject {
     }
     
     public boolean clickedOnLock(double x, double y) {
-        double size = min(this.getWidth()/8, this.getHeight()/8);
+        double size = gridSize / 2;
         return x < size && y < size;
     }
 
-    public void setInteraktionsRoomID(int id){
-        this.InteraktionsRoomID = id;
+
+    public int getInteraktionsRoomID() {
+        return InteraktionsRoomID;
     }
 
-     public int getInteraktionsRoomID(){
-        return this.InteraktionsRoomID;
-     }
-
+    public void setInteraktionsRoomID(int interaktionsRoomID) {
+        InteraktionsRoomID = interaktionsRoomID;
+    }
 }

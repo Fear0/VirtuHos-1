@@ -39,7 +39,7 @@ public class MainMenuController {
     }
 
     //Wechselt aus dem Hauptmenü in den Anzeigemodus
-    public void onShowClicked() throws IOException{
+    public void onShowClicked() {
         String username = DatabaseCommunication.getUsername();
         if (username == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, Text.MAIN_MENU_CONTROLLER_NO_USERNAME);

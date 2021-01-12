@@ -1,9 +1,18 @@
 package definitions;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+
+import javax.imageio.ImageIO;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
@@ -74,29 +83,58 @@ public class Building implements java.io.Serializable {
     }
 
     //Zeichnet das Gebäude neu
-    public void redraw(Canvas c, boolean isShowMode) {
-        if (c == null) return;
+    public void redrawBuilding(Canvas canvas) {
+        if (canvas == null) return;
         this.fitGrid();
         this.setRoomNames();
-        GraphicsContext gc = c.getGraphicsContext2D();
-        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         if (getGridState()) {
-            drawGrid(c);
+            drawGrid(canvas);
         }
         gc.setLineWidth(1);
         for (Room room : rooms) {
-            room.setGridSize(this.getGridSize());
-            if (isShowMode) {
-                room.drawWithLock(c);
-            } else {
-                room.draw(c);
+            room.draw(canvas);
             }
         }
-        if (isShowMode) {
+    public void redrawPersons(Canvas canvas) {
+        if (canvas == null) return;
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
             for (Person person : DatabaseCommunication.getPersons(name)) {
-                person.draw(c, gridSize);
+            person.draw(canvas, gridSize);
+        }
+    }
+
+    public void redrawLocks(Canvas canvas) {
+        if (canvas == null) return;
+        List<String> lockedRooms = DatabaseCommunication.getLockedRooms(this.name);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        for (Room room : rooms) {
+            room.draw(canvas);
+            if (room.getType() != RoomType.HALL) {
+                try {
+                    BufferedImage lock = ImageIO.read(new File("openlock.png"));
+                    for (String roomName : lockedRooms) {
+                        if (room.getName().equals(roomName)) {
+                            lock = ImageIO.read(new File("closedlock.png"));
+                        }
+                    }
+                    Image image = SwingFXUtils.toFXImage(lock,null);
+                    double size = gridSize / 2;
+                    gc.clearRect(room.getCoordinateX(), room.getCoordinateY(), size, size);
+                    gc.drawImage(image, room.getCoordinateX(), room.getCoordinateY(), size, size);
+                } catch (IOException e) {
+                    e.printStackTrace();
             }
         }
+    }
+    }
+
+    public void redrawEverything(Canvas canvas, Canvas personCanvas, Canvas lockCanvas) {
+        redrawBuilding(canvas);
+        redrawPersons(personCanvas);
+        redrawLocks(lockCanvas);
     }
 
     //returns a Room if coordinates inside the Room liegen
@@ -174,6 +212,9 @@ public class Building implements java.io.Serializable {
         //are there zero or more than 1 halls
         int hallCount = 0;
         for (Room room : this.rooms) {
+            if(room.getType() == RoomType.NONE){
+                return Text.BUILDING_HAS_ROOMTYPELESS_ROOM;
+            }
             if (room.getType() == RoomType.HALL) {
                 hallCount++;
             }

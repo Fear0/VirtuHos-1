@@ -28,6 +28,13 @@ public final class DatabaseCommunication {
     private static final String UPDATE_PERSON = "INSERT INTO E1_Persons(Name, Building, X, Y) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE Building = ?, X = ?, Y = ?";
     private static final String DELETE_PERSON = "DELETE FROM E1_Persons WHERE Name = ?";
     private static final String GET_PERSONS = "SELECT Name, X, Y FROM E1_Persons WHERE Building = ?";
+    private static final String DELETE_PERSONS = "DELETE FROM E1_Persons WHERE Building = ?";
+
+    private static final String LOCK_ROOM = "INSERT INTO E1_Locks(Building, Room) VALUES (?, ?) ON DUPLICATE KEY UPDATE Building = Building";
+    private static final String UNLOCK_ROOM = "DELETE FROM E1_Locks WHERE Building = ? AND Room = ?";
+    private static final String IS_LOCKED_ROOM = "SELECT 1 FROM E1_Locks WHERE Building = ? AND Room = ?";
+    private static final String GET_LOCKED_ROOMS = "SELECT Room FROM E1_Locks WHERE Building = ?";
+    private static final String DELETE_LOCKS = "DELETE FROM E1_Locks WHERE Building = ?";
 
     private static final String COLUMN_NAME = "Name";
     private static final String COLUMN_BUILDING = "Building";
@@ -35,6 +42,7 @@ public final class DatabaseCommunication {
     private static final String COLUMN_DATE = "Date";
     private static final String COLUMN_X = "X";
     private static final String COLUMN_Y = "Y";
+    private static final String COLUMN_ROOM = "Room";
 
     //Stellt eine Verbindung zur Datenbank her
     public static void initialize() {
@@ -83,6 +91,8 @@ public final class DatabaseCommunication {
             preparedStatement.setString(2, username);
             preparedStatement.setString(3, name);
             preparedStatement.executeUpdate();
+            DatabaseCommunication.deletePersons(building.getName());
+            DatabaseCommunication.deleteLocks(building.getName());
         }
     }
 
@@ -134,6 +144,8 @@ public final class DatabaseCommunication {
                 alert.setTitle(Text.TITLE);
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.orElse(null) == Text.buttonTypeYes) {
+                    DatabaseCommunication.deletePersons(name);
+                    DatabaseCommunication.deleteLocks(name);
                     try (PreparedStatement preparedStatement1 = connection.prepareStatement(DELETE_BUILDING)) {
                         preparedStatement1.setString(1, name);
                         preparedStatement1.executeUpdate();
@@ -222,5 +234,80 @@ public final class DatabaseCommunication {
             System.err.println("getPersons Error");
         }
         return persons;
+    }
+    public static void lockRoom(String buildingName, String roomName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(LOCK_ROOM)) {
+            preparedStatement.setString(1, buildingName);
+            preparedStatement.setString(2, roomName);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("lockRoom Error");
+
+        }
+    }
+
+    public static void unlockRoom(String buildingName, String roomName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(UNLOCK_ROOM)) {
+            preparedStatement.setString(1, buildingName);
+            preparedStatement.setString(2, roomName);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("unlockRoom Error");
+        }
+    }
+
+    public static void toggleLockRoom(String buildingName, String roomName) {
+        if (isLocked(buildingName, roomName))
+            unlockRoom(buildingName, roomName);
+        else
+            lockRoom(buildingName, roomName);
+    }
+
+    public static boolean isLocked(String buildingName, String roomName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(IS_LOCKED_ROOM)) {
+            preparedStatement.setString(1, buildingName);
+            preparedStatement.setString(2, roomName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.isBeforeFirst();
+            }
+        } catch (Exception e) {
+            System.err.println("toggleLockRoom Error");
+        }
+        return false;
+    }
+
+    public static List<String> getLockedRooms(String buildingName) {
+        List<String> roomNames = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(GET_LOCKED_ROOMS)) {
+            preparedStatement.setString(1, buildingName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    byte[] buffer = resultSet.getBytes(COLUMN_ROOM);
+                    String roomName = new String(buffer, StandardCharsets.UTF_8);
+                    roomNames.add(roomName);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("getLockedRooms Error");
+        }
+        return roomNames;
+    }
+
+    public static void deletePersons(String buildingName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_PERSONS)) {
+            preparedStatement.setString(1, buildingName);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("deletePersons Error");
+        }
+    }
+
+    public static void deleteLocks(String buildingName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_LOCKS)) {
+            preparedStatement.setString(1, buildingName);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("deleteLocks Error");
+        }
     }
 }

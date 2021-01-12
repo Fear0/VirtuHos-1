@@ -20,7 +20,6 @@ public class EditorController {
     private EditorMode editorMode = EditorMode.NONE;
     private Building building = new Building();
     private ResizeableCanvas canvas = null;
-    private @FXML ScrollPane scrollPane;
     private double tempX;
     private double tempY;
     private Room tempRoom;
@@ -39,7 +38,6 @@ public class EditorController {
     private @FXML StackPane myPane;
     private @FXML ToggleButton newRoom;
     private @FXML ToggleButton grid;
-    private @FXML VBox vBox;
     private SelectionController selectionController;
 
     private InteraktionControl IC;
@@ -65,7 +63,7 @@ public class EditorController {
     public void onCancelClicked() {
         if (building.getRooms().isEmpty()){
             building = new Building();
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
             MainMenu.primaryStage.setScene(MainMenu.mainMenu);
             this.resetBuilding();
             return;
@@ -77,7 +75,7 @@ public class EditorController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
             building = new Building();
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
             MainMenu.primaryStage.setScene(MainMenu.mainMenu);
             this.resetBuilding();
         }
@@ -90,11 +88,22 @@ public class EditorController {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle(Text.TITLE);
             alert.setHeaderText("");
+            if(buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM)){
+                alert.setContentText(String.format(Text.EDITOR_CONTROLLER_ROOMTYPE_ERROR_DIALOG, buildingState));
+            }else{
             alert.setContentText(String.format(Text.EDITOR_CONTROLLER_SAVE_WARNING, buildingState));
+            }
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK){
+            if (result.isPresent() && result.get() == ButtonType.OK && !buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM)){
                 building.setGridState(false);
                 DatabaseCommunication.saveDialog(building);
+            } else if(buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM) && result.get() == ButtonType.OK) {
+                for(Room room : building.getRooms()){
+                    if(room.getType() == RoomType.NONE){
+                        room.setType(RoomType.OFFICE);
+                    }
+                }
+                building.redrawBuilding(canvas);
             } else {
                 return;
             }
@@ -121,7 +130,7 @@ public class EditorController {
     public void onLoadClicked() throws SQLException {
         Building tempBuilding = DatabaseCommunication.loadDialog(IC);
         if (tempBuilding != null) building = tempBuilding;
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     //Wechselt den aktiven Modus des Editors
@@ -207,7 +216,7 @@ public class EditorController {
                         chair.toGridCoordinates(building.getGridSize());
                         if (room.isLegalChair(chair)) {
                             room.getChairs().add(chair);
-                            building.redraw(canvas, false);
+                            building.redrawBuilding(canvas);
                         }
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -233,7 +242,7 @@ public class EditorController {
                             if (result.isPresent()){
                                 Document doc = new Document(result.get());
                                 table.setDoc(doc);
-                                building.redraw(canvas, false);
+                                building.redrawBuilding(canvas);
                             }
                         } else {
                             //tisch hat ein dokoment an dieser stelle könnte man es bearbeiten
@@ -244,7 +253,7 @@ public class EditorController {
                             Optional<String> result = textInputDialog.showAndWait();
                             if (result.isPresent()){
                                 table.getDoc().setLink((result.get()));
-                                building.redraw(canvas, false);
+                                building.redrawBuilding(canvas);
                             }
                         }
                     }
@@ -262,14 +271,14 @@ public class EditorController {
                 ghostChair.setCoordinateX(mouseEvent.getX());
                 ghostChair.setCoordinateY(mouseEvent.getY());
                 ghostChair.toGridCoordinates(building.getGridSize());
-                building.redraw(canvas, false);
+                building.redrawBuilding(canvas);
                 ghostChair.draw(canvas);
             }
         }
     }
     public void onMouseExited(MouseEvent mouseEvent) {
         if (editorMode == EditorMode.CHAIR) {
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
         }
     }
 
@@ -278,12 +287,12 @@ public class EditorController {
         if (mouseEvent.getX() >= myPane.getWidth() - building.getGridSize()) {
             myPane.setPrefWidth(myPane.getWidth() + building.getGridSize());
             //canvas.extendWidth(building.getGridSize());
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
         }
         if (mouseEvent.getY() >= myPane.getHeight() - building.getGridSize()) {
             myPane.setPrefHeight(myPane.getHeight() + building.getGridSize());
             //canvas.extendHeight(building.getGridSize());
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
         }
         switch (editorMode) {
             case MOVE -> {
@@ -343,7 +352,7 @@ public class EditorController {
 
         //Erstellt einen Raum
         if (editorMode == EditorMode.ROOM) {
-            tempRoom = new Room(tempX, tempY, 0.0, 0.0);
+            tempRoom = new Room(tempX, tempY, 0.0, 0.0, building.getGridSize());
             building.getRooms().add(tempRoom);
         }
         //Erstellt einen Tisch
@@ -366,7 +375,7 @@ public class EditorController {
                     alert.setContentText(Text.EDITOR_CONTROLLER_ROOM_SIZE_ERROR);
                     alert.showAndWait();
                     building.getRooms().remove(tempRoom);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                 }
                 else {
                     tempRoom.setCoordinateX(min(tempRoom.getCoordinateX(), tempRoom.getCoordinateX() + tempRoom.getWidth()));
@@ -403,7 +412,7 @@ public class EditorController {
                     Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX()- room.getCoordinateX(), mouseEvent.getY()- room.getCoordinateY());
                     if (chair != null) {
                         room.getChairs().remove(chair);
-                        building.redraw(canvas, false);
+                        building.redrawBuilding(canvas);
                         break;
                     }
                 }
@@ -413,12 +422,12 @@ public class EditorController {
                     if (tempTable.getDoc() != null) {
                         if (tempTable.hasDocAtTableCoordinates(mouseEvent.getX()- tempRoom.getCoordinateX() -tempTable.getCoordinateX(), mouseEvent.getY()-tempRoom.getCoordinateY() -tempTable.getCoordinateY() )) {
                             tempTable.setDoc(null);
-                            building.redraw(canvas, false);
+                            building.redrawBuilding(canvas);
                             break;
                         }
                     }
                     tempRoom.getTables().remove(tempTable);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                     break;
                 }
                 //Löscht einen Raum
@@ -431,27 +440,27 @@ public class EditorController {
                         Optional<ButtonType> result = alert.showAndWait();
                         if (result.isPresent() && result.get() == ButtonType.OK) {
                             building.getRooms().remove(tempRoom);
-                            building.redraw(canvas, false);
+                            building.redrawBuilding(canvas);
                         } else {
                             break;
                         }
                     }
                     building.getRooms().remove(tempRoom);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                     break;
                 }
             case OFFICE:
                 //Verändert den Raumtyp eines Raums zu Büro
                 if (tempRoom != null) {
                     tempRoom.setType(RoomType.OFFICE);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                 }
                 break;
             case MEETING_ROOM:
-                //Verändert den Raumtyp eines Raums zu Konferenzraum
+                //Verändert den Raumtyp eines Raums zu Besprechungsraum
                 if (tempRoom != null) {
                     tempRoom.setType(RoomType.MEETING_ROOM);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                 }
                 break;
             case HALL:
@@ -466,13 +475,13 @@ public class EditorController {
                         if (result.isPresent() && result.get() == ButtonType.OK) {
                             tempRoom.setChairs(new ArrayList<>());
                             tempRoom.setType(RoomType.HALL);
-                            building.redraw(canvas, false);
+                            building.redrawBuilding(canvas);
                         } else {
                             break;
                         }
                     }
                     tempRoom.setType(RoomType.HALL);
-                    building.redraw(canvas, false);
+                    building.redrawBuilding(canvas);
                 }
                 break;
             case ROOM_NAME:
@@ -486,7 +495,7 @@ public class EditorController {
                     if (!building.roomNameExists(name)) {
                         tempRoom.setName(name);
                         tempRoom.setNameState(true);
-                        building.redraw(canvas, false);
+                        building.redrawBuilding(canvas);
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
                         alert.setTitle(Text.TITLE);
@@ -518,7 +527,7 @@ public class EditorController {
             tempRoom.setCoordinateY(oldY);
         }
         //Koordinaten von Stuehlen anpassen, so dass sie sich mitbewegen
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     //Bewegt einen Tisch
@@ -533,7 +542,7 @@ public class EditorController {
         if (!tempRoom.isLegalTable(tempTable)) {
             tempTable.setCoordinateY(oldY);
         }
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     //Stellt einen Raum dar, während er erstellt wird
@@ -549,7 +558,7 @@ public class EditorController {
         if (!building.isLegalRoom(tempRoom, canvas)) {
             tempRoom.setHeight(oldHeight);
         }
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     //Stellt einen Tisch dar, während er erstellt wird
@@ -565,7 +574,7 @@ public class EditorController {
         if (!tempRoom.isLegalTable(tempTable)) {
             tempTable.setHeight(oldHeight);
         }
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     //Bewegt ein Stuhl in Raum
@@ -578,18 +587,18 @@ public class EditorController {
             tempChair.setCoordinateX(oldX);
             tempChair.setCoordinateY(oldY);
         }
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
     //Zeigt bzw. versteckt das Grid für den nutzer
     public void onGridClicked() {
         building.setGridState(!building.getGridState());
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
     }
 
     public void onSliderDragged() {
         if (!GridSlider.isDisabled()) {
             building.setGridSize(GridSlider.getValue());
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
         }
     }
 
@@ -605,7 +614,7 @@ public class EditorController {
         if (selectionController != null) {
             selectionController.clearSelection();
             selectionController.setBuilding(building);
-            building.redraw(canvas, false);
+            building.redrawBuilding(canvas);
             return;
         }
         selectionController = new SelectionController(building, canvas, this);

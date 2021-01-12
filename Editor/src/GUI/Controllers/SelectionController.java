@@ -273,7 +273,7 @@ public class SelectionController implements EventHandler<MouseEvent> {
     }
 
     private void redraw(Canvas canvas, Building building) {
-        building.redraw(canvas, false);
+        building.redrawBuilding(canvas);
         for (GhostObject ghostObject : ghostObjects) {
             ghostObject.draw(canvas);
         }

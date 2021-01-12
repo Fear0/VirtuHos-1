@@ -22,7 +22,9 @@ import java.util.concurrent.TimeUnit;
 public class ShowController {
 
     private @FXML TextField userField;
-    private Canvas showCanvas;
+    private Canvas buildingCanvas;
+    private Canvas personCanvas;
+    private Canvas lockCanvas;
     private @FXML StackPane showStackPane;
     private Building building;
     private String username;
@@ -41,7 +43,7 @@ public class ShowController {
     public void onBackClicked() {
         removeUser();
         building = null;
-        new Building().redraw(showCanvas, true);
+        new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
         //stop the thread for building updates
         if(this.thread != null) this.thread.end();
         MainMenu.primaryStage.setScene(MainMenu.mainMenu);
@@ -57,26 +59,33 @@ public class ShowController {
         building = DatabaseCommunication.loadDialog(IC);
         if (building != null){
             removeUser();
-            new Building().redraw(showCanvas, true);
+            new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
             buildingName = building.getName();
             showStackPane.setPrefWidth(building.highestXValue() + building.getGridSize());
             showStackPane.setPrefHeight(building.highestYValue() + building.getGridSize());
-            showCanvas = new Canvas(building.highestXValue() + building.getGridSize(), building.highestYValue() + building.getGridSize() );
-            showStackPane.getChildren().add(showCanvas);
-            StackPane.setAlignment(showCanvas, Pos.TOP_LEFT);
-            showCanvas.setOnMouseClicked(this::onCanvasClicked);
-            building.redraw(showCanvas, true);
+            buildingCanvas = new Canvas(building.highestXValue() + building.getGridSize(), building.highestYValue() + building.getGridSize());
+            personCanvas = new Canvas(building.highestXValue() + building.getGridSize(), building.highestYValue() + building.getGridSize());
+            lockCanvas = new Canvas(building.highestXValue() + building.getGridSize(), building.highestYValue() + building.getGridSize());
+            showStackPane.getChildren().add(buildingCanvas);
+            showStackPane.getChildren().add(lockCanvas);
+            showStackPane.getChildren().add(personCanvas);
+            StackPane.setAlignment(buildingCanvas, Pos.TOP_LEFT);
+            StackPane.setAlignment(personCanvas, Pos.TOP_LEFT);
+            StackPane.setAlignment(lockCanvas, Pos.TOP_LEFT);
+            buildingCanvas.setOnMouseClicked(this::onCanvasClicked);
+            personCanvas.setOnMouseClicked(this::onCanvasClicked);
+            lockCanvas.setOnMouseClicked(this::onCanvasClicked);
+            building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
 
             //giving thread new building info if we switch buildings
             if(this.thread == null) {
                 //start thread for updating the building
                 this.thread = new BuildingThread(this);
-                this.thread.setBuildingname(buildingName);
                 Thread t1 = new Thread(thread, "building updates");
                 t1.setDaemon(true);
                 t1.start();
             } else{
-                this.thread.setBuildingname(buildingName);
+                this.thread.setBuilding(building);
             }
 
         }
@@ -85,18 +94,14 @@ public class ShowController {
     public void onGridClicked(){
         if (building != null) {
             building.setGridState(!building.getGridState());
-            building.redraw(showCanvas, true);
+            building.redrawBuilding(buildingCanvas);
         }
     }
 
     public void onCanvasClicked(MouseEvent mouseEvent) {
-        try {
-            building = DatabaseCommunication.loadDialog(buildingName,IC);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         if (building != null){
-            building.redraw(showCanvas, true);
+            building.redrawPersons(personCanvas);
+            building.redrawLocks(lockCanvas);
         }
 
         if (building != null) {
@@ -107,14 +112,8 @@ public class ShowController {
             if ((room.getType() != RoomType.HALL) &&
                     room.clickedOnLock(mouseEvent.getX() - room.getCoordinateX(),
                             mouseEvent.getY() - room.getCoordinateY())) {
-                room.setLocked(!room.getLocked());
-                building.redraw(showCanvas, true);
-                building.setGridState(false);
-                try {
-                    DatabaseCommunication.replace(building, buildingName);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                DatabaseCommunication.toggleLockRoom(buildingName, room.getName());
+                building.redrawLocks(lockCanvas);
                 return;
             }
 
@@ -140,7 +139,7 @@ public class ShowController {
             }
 
             //check if the room you want to enter is currently locked
-            if (room.getLocked()) {
+            if (DatabaseCommunication.isLocked(buildingName, room.getName())) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle(Text.TITLE);
                 alert.setHeaderText("");
@@ -158,7 +157,7 @@ public class ShowController {
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                 //TODO hier hallen gruppenerstellung
                 InteraktionMovePerson(room, false);
-                building.redraw(showCanvas, true);
+                building.redrawPersons(personCanvas);
             } else {
                 Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX() - room.getCoordinateX(),
                         mouseEvent.getY() - room.getCoordinateY());
@@ -168,7 +167,7 @@ public class ShowController {
                                 chair.getCoordinateY() + room.getCoordinateY());
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
                         InteraktionMovePerson(room, false);
-                        building.redraw(showCanvas, true);
+                        building.redrawPersons(personCanvas);
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
                         alert.setTitle(Text.TITLE);
@@ -184,7 +183,7 @@ public class ShowController {
                                 tempChair.getCoordinateY() + room.getCoordinateY());
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
                         InteraktionMovePerson(room, false);
-                        building.redraw(showCanvas, true);
+                        building.redrawPersons(personCanvas);
                     } else {
                         Alert alert = new Alert(Alert.AlertType.WARNING);
                         alert.setTitle(Text.TITLE);
@@ -197,9 +196,12 @@ public class ShowController {
         }
     }
 
-    public void setBuilding(Building building){
-        this.building = building;
-        this.building.redraw(showCanvas, true);
+    public Canvas getPersonCanvas() {
+        return personCanvas;
+    }
+
+    public Canvas getLockCanvas() {
+        return lockCanvas;
     }
 
     //Event für die Analyse Gruppe
@@ -212,6 +214,9 @@ public class ShowController {
         //maybe in polish
     }
 
+    public Building getBuilding() {
+        return this.building;
+    }
     /*public void DragEnter(DragEvent dragEvent) {
         Room room = building.getRoomAtCoordinates(dragEvent.getX(), dragEvent.getY());
         if(room != null){
@@ -264,26 +269,28 @@ public class ShowController {
 
 class BuildingThread implements Runnable{
     private volatile boolean exit = false;
-    private volatile String buildingName;
-    private ShowController cont;
-    private Building newBuilding;
+    private final ShowController showController;
+    private final Canvas personCanvas;
+    private final Canvas lockCanvas;
+    Building building;
 
-    public BuildingThread(ShowController a){
-        this.cont = a;
+    public BuildingThread(ShowController showController){
+        this.showController = showController;
+        personCanvas = showController.getPersonCanvas();
+        lockCanvas = showController.getLockCanvas();
     }
 
     @Override
     public void run() {
-        InteraktionControl IC = cont.getIC();
+        building = showController.getBuilding();
+        InteraktionControl IC = showController.getIC();
         while(!exit){
             //replace this print with logic to update a building
             //System.out.println("in the thread for: " + buildingName);
-            try {
-                newBuilding = DatabaseCommunication.loadDialog(buildingName, IC);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            cont.setBuilding(newBuilding);
+
+            building.redrawPersons(personCanvas);
+            building.redrawLocks(lockCanvas);
+
 
             IC.checkRequest();
 
@@ -291,19 +298,17 @@ class BuildingThread implements Runnable{
             try {
                 TimeUnit.SECONDS.sleep(5);
             } catch (InterruptedException e) {
-                System.out.println("thread interrupted");
+                System.err.println("thread interrupted");
             }
 
         }
-        //System.out.println("thread ended for: " + buildingName);
     }
 
     public void end(){
         exit = true;
     }
 
-    public void setBuildingname(String buildingname) {
-        this.buildingName = buildingname;
+    public void setBuilding(Building building) {
+        this.building = building;
     }
-    //Testkommentar
 }
