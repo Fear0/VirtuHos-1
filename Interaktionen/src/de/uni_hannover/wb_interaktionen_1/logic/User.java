@@ -109,6 +109,7 @@ public class User {
      */
     public void openWebpage(String url){
         try{
+            System.out.println(url);
             if(WebsiteOpener.isMac()){
                 System.setProperty("webdriver.gecko.driver", "geckodriver");
                 System.setProperty("webdriver.chrome.driver", "chromedriver");

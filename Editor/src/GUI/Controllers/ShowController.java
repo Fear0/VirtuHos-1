@@ -305,5 +305,5 @@ class BuildingThread implements Runnable{
     public void setBuildingname(String buildingname) {
         this.buildingName = buildingname;
     }
-
+    //Testkommentar
 }
