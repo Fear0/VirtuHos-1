@@ -1032,6 +1032,21 @@ public class TestDB {
         intermediate.executeUpdate();
     }
 
+    /** Method to delete a document from an office
+     *
+     * @param url URL of the document that will be deleted
+     * @param officeID ID of the office the document will be removed from
+     * @throws SQLException on error or failure with DB
+     * @author David Sebode
+     */
+    public void deleteDocument(String url, int officeID) throws SQLException{
+        String document = "DELETE FROM " + DOCUMENT_TABLE + " WHERE document_url = ? AND office_id = ?;";
+        PreparedStatement pstm = dbConnection.prepareStatement(document);
+        pstm.setString(1, url);
+        pstm.setInt(2, officeID);
+        pstm.executeUpdate();
+    }
+
     /** Method to get a list of all documents inside the specified office.
      *
      * @param officeID : ID of the office-room.

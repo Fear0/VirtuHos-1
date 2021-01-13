@@ -109,7 +109,6 @@ public class User {
      */
     public void openWebpage(String url){
         try{
-            System.out.println(url);
             if(WebsiteOpener.isMac()){
                 System.setProperty("webdriver.gecko.driver", "geckodriver");
                 System.setProperty("webdriver.chrome.driver", "chromedriver");
@@ -119,11 +118,11 @@ public class User {
             }
             web = new ChromeDriver();
             web.get(url);
-        } catch (WebDriverException ex1){ // Fallback if the driver or Chrome fail TODO Exception verfeinern
+        } catch (Exception ex1){ // Fallback if the driver or Chrome fail
             try{
                 web = new FirefoxDriver();
                 web.get(url);
-            } catch (WebDriverException ex2){ // Fallback if the driver or Firefox fail TODO Exception verfeinern
+            } catch (Exception ex2){ // Fallback if the driver or Firefox fail
                 WebsiteOpener WO = new WebsiteOpener(url); // Create a new website opener
                 WO.open();
             }
