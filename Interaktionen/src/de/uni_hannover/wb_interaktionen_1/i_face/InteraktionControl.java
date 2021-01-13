@@ -111,12 +111,10 @@ public class InteraktionControl {
      *  Logs out the user.
      */
     public void logout(){
-        System.out.println("Wird aufgerufen");
         if(login.getCurrentUser() !=null) {
             if (login.getCurrentUser().getCurrent_room() != null) {
                 login.getCurrentUser().getCurrent_room().leave_Room(login.currentUser, db, login.getCurrentUser().getCurrent_room().getId());
             }
-            System.out.println("kurz vor offline");
             login.setCurrentUserOffline();
             login.resetCurrentUser();
         }
@@ -288,6 +286,75 @@ public class InteraktionControl {
         } catch (SQLException ex){
             ex.printStackTrace();
             return;
+        }
+    }
+
+    /** Uploads a URL to the database for a given office
+     *
+     * @param url URL of the document
+     * @param roomID ID of the office you want to put the document into
+     */
+    public void uploadDocument(String url, int roomID){
+        try{
+            db.addDocument(url, roomID);
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            return;
+        }
+    }
+
+    /** Delete a specific URL from the database in a given office
+     *
+     * @param url URL of the document you want to delete
+     * @param roomID ID of the office you want the URL removed from
+     */
+    public void deleteDocument(String url, int roomID){
+        try{
+            db.deleteDocument(url, roomID);
+        } catch (SQLException ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    /** Retrieve the list of the URL's of documents in a given office
+     *
+     * @param roomID ID of the office you want the documents from
+     * @return List of URL's
+     */
+    public ArrayList<String> getDocuments(int roomID){
+        try{
+            return db.getDocumentsIn(roomID);
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /** Increases the document access counter for the current user to a given document
+     *
+     * @param url URL of the document that is accessed
+     */
+    public void accessDocument(String url){
+        try{
+            db.incrementAccessCounter(login.getCurrentUser().getId(), url);
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            return;
+        }
+    }
+
+    /** Retrieve the number of times a document has been accessed
+     *
+     * @param url URL of the document
+     * @param userID UserID/PersonalID of the user that has accessed the document
+     * @return On success the number of times the user with userID has accessed the document, else on error -1
+     */
+    public int getAccesses(String url, String userID){
+        try{
+            return db.getAccessTimes(userID, url);
+        } catch (SQLException ex){
+            return -1;
         }
     }
 }
