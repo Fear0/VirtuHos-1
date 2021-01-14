@@ -81,9 +81,6 @@ public class ShowController {
             lockCanvas.setOnMouseClicked(this::onCanvasClicked);
             building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
 
-
-
-
             //giving thread new building info if we switch buildings
             if(this.thread == null) {
                 //start thread for updating the building
@@ -276,7 +273,6 @@ public class ShowController {
     public void setpThread(PersonThread p){
         this.pThread = p;
     }
-
 }
 
 class BuildingThread implements Runnable{
@@ -303,8 +299,11 @@ class BuildingThread implements Runnable{
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
 
-
-            //IC.checkRequest();
+            try{
+                IC.checkRequest(showController.getBuilding().getName());
+            } catch (NullPointerException ex){
+                IC.checkRequest(null);
+            }
 
             //wait 5 sec
             try {

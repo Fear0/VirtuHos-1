@@ -105,12 +105,10 @@ class PersonThread implements Runnable{
 
     @Override
     public void run() {
-        int counter = 0;
+
         while(!exit){
 
-            System.out.println("Thread läuft " + counter++);
-            IC.checkRequest();
-
+            IC.updateUser();
 
             //wait 5 sec
             try {
@@ -120,7 +118,6 @@ class PersonThread implements Runnable{
             }
 
         }
-        System.out.println("Thread stopped");
     }
 
     public void end(){

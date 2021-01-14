@@ -208,9 +208,14 @@ public class InteraktionControl {
     /**
      * This methode checks for requests on the database to the current user
      */
-    public void checkRequest(){
+    public void checkRequest(String buildingID){
         try {
-            ArrayList<Room> rooms = db.getAllRooms(); //ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
+            ArrayList<Room> rooms;
+            if(buildingID != null){
+                rooms = db.getAllRooms(buildingID);//ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
+            } else {
+                rooms = db.getAllRooms();
+            }
             if (login.getCurrentUser() != null) {
                 User receiver = login.getCurrentUser();
                 ArrayList<Request> request = db.getRequests(receiver);
@@ -241,7 +246,13 @@ public class InteraktionControl {
                 /* updating user in rooms; room name has to be room id, integer ... */
                 for (Room room : rooms) {
                     room.occupants = db.getAllUserInRoomAsUserList(room, db);
+                    System.out.print("RoomID: ");
+                    System.out.print(room.getId());
+                    System.out.print(" Occupants: ");
+                    System.out.print(room.occupants);
+                    System.out.println();
                 }
+                System.out.println();
 
                 /* Set online_status_2 (ask Alan for the purpose) */
                 db.updateOnline(login.getCurrentUser().getId());
