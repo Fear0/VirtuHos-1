@@ -2,6 +2,7 @@ package de.uni_hannover.wb_interaktionen_1.gui;
 
 import de.uni_hannover.wb_interaktionen_1.Main;
 import de.uni_hannover.wb_interaktionen_1.logic.Login;
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 import de.uni_hannover.wb_interaktionen_1.logic.User;
 import de.uni_hannover.wb_interaktionen_1.rooms.*;
 import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
@@ -17,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
 
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ public class GUIMain {
     private ArrayList<ListView<String>> all_listviews_room;
     private ArrayList<ListView<String>> all_listviews_group;
     private ArrayList<Label> all_capacity_labels;
+    private ReadConfig rc;
 
 
     /** Creates the GUIMain Object.
@@ -46,11 +49,14 @@ public class GUIMain {
      */
     public GUIMain(Login log, TestDB db, Main main){
         try{
-            this.existent_rooms = db.getAllRooms();
-            this.hall_groups = db.getAllHallGroups();
+            rc = new ReadConfig();
+            this.existent_rooms = db.getAllRooms(rc.Building);
+            this.hall_groups = db.getAllHallGroups(rc.Building);
             this.main = main;
         } catch (SQLException e){
             e.printStackTrace();
+        } catch (IOException ie){
+            ie.printStackTrace();
         }
         this.db = db;
         this.login = log;
@@ -137,7 +143,7 @@ public class GUIMain {
     public Stage createLogoutPopUp(Stage window, Scene next) {
         Stage popup = new Stage();
         VBox comp = new VBox();
-        Label infotext = new Label(" Sie werden von dem System abgemeldet.\n Sind Sie sicher?");
+        Label infotext = new Label("Wollen Sie sich wirklich ausloggen?");
         Button confirm = new Button("Ja");
         Button cancel = new Button("Nein");
         confirm.setOnAction(e -> {
@@ -343,7 +349,14 @@ public class GUIMain {
         return grid;
     }*/
 
-    public GridPane createMainGripPane2(){
+    public GridPane createMainGripPane2(boolean update_thread){
+        try {
+            this.existent_rooms = db.getAllRooms(rc.Building);
+            this.hall_groups = db.getAllHallGroups(rc.Building);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setHgap(10);
@@ -399,22 +412,26 @@ public class GUIMain {
 
 
                 lv.setOnMouseClicked(click -> {
-                    String[] s = lv.getSelectionModel().getSelectedItem().split("[\\(\\)]");
-                    String username = s[0];
-                    String userid = s[1];
-                    if (click.getClickCount() == 2 && login.currentUser.getCurrent_room().isOffice()) {
-                        try {
-                            ArrayList<String> a = db.getAllUserInRoom(login.currentUser.getCurrent_room().getId());
-                            if (db.getAllUserInRoom(login.currentUser.getCurrent_room().getId()).contains(userid)) {
-                                System.out.println(lv.getSelectionModel().getSelectedItem());
-                                System.out.println("-----------------------------------------------------");
-                                db.sendRequest(login.currentUser.getId(), userid, "webcam");
-                                ErrorMessage e = new ErrorMessage();
-                                e.createError("Die Anfrage zur Aktivierung der Webcam wurde erfolgreich an " + username + " verschickt.");
+                    try { //ToDo Vielleicht schöner fixen?
+                        String[] s = lv.getSelectionModel().getSelectedItem().split("[\\(\\)]");
+                        String username = s[0];
+                        String userid = s[1];
+                        if (click.getClickCount() == 2 && login.currentUser.getCurrent_room().isOffice()) {
+                            try {
+                                ArrayList<String> a = db.getAllUserInRoom(login.currentUser.getCurrent_room().getId());
+                                if (db.getAllUserInRoom(login.currentUser.getCurrent_room().getId()).contains(userid)) {
+                                    System.out.println(lv.getSelectionModel().getSelectedItem());
+                                    System.out.println("-----------------------------------------------------");
+                                    db.sendRequest(login.currentUser.getId(), userid, "webcam");
+                                    ErrorMessage e = new ErrorMessage();
+                                    e.createError("Die Anfrage zur Aktivierung der Webcam wurde erfolgreich an " + username + " verschickt.");
+                                }
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
                             }
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
                         }
+                    } catch (NullPointerException ex){
+                        System.out.println("You clicked on an empty object");
                     }
                 });
 
@@ -444,6 +461,10 @@ public class GUIMain {
 
                 all_listviews_group.add(lv);
             }
+        }
+        if(update_thread) {
+            login.getThreadUpdate().setList_room(all_listviews_room);
+            login.getThreadUpdate().setList_group(all_listviews_group);
         }
 
         return grid;
@@ -542,13 +563,13 @@ public class GUIMain {
                 listView.getItems().addAll(list);
                 dragCompleted = true;
             }
-        // Invite another user in the same room
+            // Invite another user in the same room
         } else if (login.getCurrentUser().getCurrent_room().getId() == roomID) {
             try {
                 if (db.getAllUserInRoom(roomID).size() < db.getRoomWithRoomID(roomID,db).getCapacity()) {
                     db.sendRequest(login.currentUser.getId(), userID, "join");
                     ErrorMessage e = new ErrorMessage();
-                    e.createError("Die Einladung wurde erfolgreich an " + username + " verschickt.");
+                    e.createError("Einladung verschickt.");
                 } else {
                     ErrorMessage e = new ErrorMessage();
                     e.createError("Die Einladung wurde nicht an " + username + " verschickt, weil der Raum bereits voll ist.");

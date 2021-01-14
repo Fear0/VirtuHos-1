@@ -29,4 +29,17 @@ public class ErrorMessage {
         popup.show();
         return popup;
     }
+
+    public Stage createExitError(String message) {
+        Stage popup = new Stage();
+        VBox comp = new VBox();
+        Label infotext = new Label(message);
+        Button confirm = new Button("Exit");
+        confirm.setOnAction(e -> System.exit(404));
+        Scene stageScene = new Scene(comp, 300, 150);
+        comp.getChildren().addAll(infotext, confirm);
+        popup.setScene(stageScene);
+        popup.show();
+        return popup;
+    }
 }

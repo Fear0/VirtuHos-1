@@ -1193,6 +1193,23 @@ public class TestDB {
         return groups;
     }
 
+    /** Method to get the starting hall
+     *
+     * @param buildingID ID of the building you want to get the starting hall for
+     * @return ID of the starting hall for a given building, else -1 on error
+     * @throws SQLException : In case the query fails
+     * @author David Sebode
+     */
+    public int getStartingHall(String buildingID) throws SQLException{
+        String s_hall = "SELECT roomID FROM " + ROOM_TABLE + " JOIN " + HALL_TABLE + " using(roomID)" +
+                " WHERE building_name = ? AND start_room = ?;";
+        PreparedStatement intermediate = dbConnection.prepareStatement(s_hall);
+        intermediate.setString(1, buildingID);
+        intermediate.setInt(2, 1);
+        ResultSet res = intermediate.executeQuery();
+        return res.next() ? res.getInt("roomID") : -1;
+    }
+
     public boolean getComFailed(){
         return this.comFailed;
     }

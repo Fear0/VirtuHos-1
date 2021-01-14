@@ -80,7 +80,7 @@ public class ShowController {
             personCanvas.setOnMouseClicked(this::onCanvasClicked);
             lockCanvas.setOnMouseClicked(this::onCanvasClicked);
             //add user to the middle of the first hall
-            Room temproom = null;
+            /*Room temproom = null;
             for(Room room : building.getRooms()){
                 if(room.getType() == RoomType.HALL){
                     temproom = room;
@@ -93,7 +93,37 @@ public class ShowController {
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                 InteraktionMovePerson(temproom, false);
             }
+            building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);*/
+
+            ///// @David Sebode aus Interaktionen hat das hier umgeschrieben
+            int hallID = IC.sendUserToStartingHall(building.getName());
+            System.out.println(hallID);
+            Room tempRoom = null;
+            for(Room room : building.getRooms()){
+                if(room.getInteraktionsRoomID() == hallID){
+                    tempRoom = room;
+                }
+            }
+            if(tempRoom != null){
+                Person tempPerson = new Person(this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
+                        (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
+                DatabaseCommunication.updatePerson(tempPerson, buildingName);
+            } else { //Eure Methode
+                for(Room room : building.getRooms()){
+                    if(room.getType() == RoomType.HALL){
+                        tempRoom = room;
+                        break;
+                    }
+                }
+                if(tempRoom != null){
+                    Person tempPerson = new Person(this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
+                            (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
+                    DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                    InteraktionMovePerson(tempRoom, false);
+                }
+            }
             building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
+            /////
 
             //giving thread new building info if we switch buildings
             if(this.thread == null) {

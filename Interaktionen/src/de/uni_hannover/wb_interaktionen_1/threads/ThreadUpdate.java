@@ -2,6 +2,7 @@ package de.uni_hannover.wb_interaktionen_1.threads;
 
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import de.uni_hannover.wb_interaktionen_1.Main;
+import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
 import de.uni_hannover.wb_interaktionen_1.gui.GUIMain;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
 import de.uni_hannover.wb_interaktionen_1.logic.Login;
@@ -33,6 +34,7 @@ public class ThreadUpdate extends Thread{
     private Login login;
     private Main main;
     private GUIMain guimain;
+    private String building;
     private boolean comm_failed = false;
     private boolean stop_flag = false;
 
@@ -40,10 +42,13 @@ public class ThreadUpdate extends Thread{
     private static ThreadUpdate instance = null;
 
     //Get the only object available -- @Meikel Kokowski
-    public static ThreadUpdate getInstance(GUIMain g, TestDB db, Login login, Main m){
+    public static ThreadUpdate getInstance(GUIMain g, TestDB db, Login login, Main m, String building){
         if(instance == null) {
-            instance = new ThreadUpdate(g, db, login, m);
+            instance = new ThreadUpdate(g, db, login, m, building);
         }
+        instance.setBuilding(building);
+        instance.setList_room(g.getAll_listviews_room());
+        instance.setList_group(g.getAll_listviews_group());
         return instance;
     }
 
@@ -54,16 +59,22 @@ public class ThreadUpdate extends Thread{
      * @param login the login
      * @param m the main class
      */
-    private ThreadUpdate(GUIMain g, TestDB db, Login login, Main m){
-        setDaemon(true);
-        this.list_room = g.getAll_listviews_room();
-        this.capacityl = g.getAll_capacity_labels();
-        this.db = db;
-        this.login = login;
-        this.main = m;
-        this.guimain = g;
-        try {
-            hallgroups = db.getAllHallGroups();
+    private ThreadUpdate(GUIMain g, TestDB db, Login login, Main m, String building){
+        try{
+            setDaemon(true);
+            this.list_room = g.getAll_listviews_room();
+            this.list_group = g.getAll_listviews_group();
+            this.capacityl = g.getAll_capacity_labels();
+            this.db = db;
+            this.login = login;
+            this.main = m;
+            this.guimain = g;
+            this.building = building;
+            this.hallgroups = db.getAllHallGroups(building);
+        } catch (CommunicationsException ce) {
+            //reconnect to DB if communication fails
+            db.setComFailed(true);
+            System.out.println("Problem with Connection\n");
         } catch (SQLException e){
             e.printStackTrace();
         }
@@ -77,6 +88,18 @@ public class ThreadUpdate extends Thread{
         this.hallgroups = hallgroups;
     }
 
+    public void setList_room(ArrayList<ListView<String>> list_room) {
+        this.list_room = list_room;
+    }
+
+    public void setList_group(ArrayList<ListView<String>> list_group) {
+        this.list_group = list_group;
+    }
+
+    public void setBuilding(String building){
+        this.building = building;
+    }
+
     @Override
     public void run(){
         while (!this.isInterrupted()){
@@ -85,7 +108,7 @@ public class ThreadUpdate extends Thread{
                 public void run() {
                     try {
                         //Check for new hallgroups
-                        ArrayList<HallGroup> new_hallgroups = db.getAllHallGroups();
+                        ArrayList<HallGroup> new_hallgroups = db.getAllHallGroups(building);
                         if (hallgroups.size() == new_hallgroups.size()) {
                             for (int i = 0; i < new_hallgroups.size(); i++) {
                                 if (!hallgroups.get(i).equals(new_hallgroups.get(i))) {
@@ -99,7 +122,7 @@ public class ThreadUpdate extends Thread{
 
                         //Update the Listviews
                         //Rooms
-                        ArrayList<Room> rooms = db.getAllRooms();
+                        ArrayList<Room> rooms = db.getAllRooms(building);
                         ArrayList<ObservableList<String>> users_in_room_new = new ArrayList<>();
                         users_in_room_new.add(db.getAllUserWithoutRoomObservable());
 
@@ -112,17 +135,16 @@ public class ThreadUpdate extends Thread{
                             list_room.get(i).getItems().clear();
                             list_room.get(i).setItems(users_in_room_new.get(i));
                         }
-                        //users_in_room_old = users_in_room_new;
 
                         //Groups
-                        list_group = guimain.getAll_listviews_group();
-                        ArrayList<HallGroup> groups = db.getAllHallGroups();
+                        ArrayList<HallGroup> groups = db.getAllHallGroups(building);
                         ArrayList<ObservableList<String>> users_in_group_new = new ArrayList<>();
+
                         for (HallGroup g : groups) {
                             ObservableList<String> o = db.getAllUserInHallGroupObservable(g.getId());
                             users_in_group_new.add(o);
                         }
-                        for (int i = 0; i < list_group.size(); i++) {
+                        for (int i = 0; i < groups.size(); i++) {
                             list_group.get(i).getItems().clear();
                             list_group.get(i).setItems(users_in_group_new.get(i));
                         }
@@ -151,6 +173,12 @@ public class ThreadUpdate extends Thread{
                             System.out.println("Problem with SQL in TestDB\n");
                         }
                     }
+                    if(db.getComFailed() == true){
+                        ErrorMessage err = new ErrorMessage();
+                        err.createError("Überprüfe deine Internetverbindung.");
+                        db.reconnect();
+                        db.setComFailed(false);
+                    }
                 }
             });
 
@@ -163,10 +191,6 @@ public class ThreadUpdate extends Thread{
                 }
             }while(this.stop_flag);
 
-            if(db.getComFailed() == true){
-                db.reconnect();
-                db.setComFailed(false);
-            }
 
         }
     }
@@ -185,7 +209,8 @@ public class ThreadUpdate extends Thread{
      */
     public void checkRequest(){
         try {
-            ArrayList<Room> rooms = db.getAllRooms();
+            ArrayList<Room> rooms = db.getAllRooms(building);
+            System.out.println(building);
             if (login.getCurrentUser() != null) {
                 User receiver = login.getCurrentUser();
                 ArrayList<Request> request = db.getRequests(receiver);
@@ -200,6 +225,8 @@ public class ThreadUpdate extends Thread{
                         r.createWebcamRequest();
                     } else if (r.getType().equals("rejectwebcam")) {
                         r.createRejectMessage("webcam");
+                    } else if (r.getType().equals("leave")){
+                        receiver.getCurrent_meeting().leaveMeetingAs(receiver, db, receiver.getCurrent_room().getId());
                     } else if (r.getType().equals("self")) {
                         for (Room room : rooms) {
                             if (room.getId() == db.findRoomFor(r.getSender())) {
@@ -227,6 +254,11 @@ public class ThreadUpdate extends Thread{
                 /* Set online_status_2 (ask Alan for the purpose) */
                 db.updateOnline(login.getCurrentUser().getId());
             }
+        } catch (CommunicationsException ce) {
+            //reconnect to DB if communication fails
+            db.setComFailed(true);
+            System.out.println("Problem with Connection\n");
+
         } catch (SQLException e){
             e.printStackTrace();
         }

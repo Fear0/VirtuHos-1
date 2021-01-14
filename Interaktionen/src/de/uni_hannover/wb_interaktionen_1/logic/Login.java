@@ -1,5 +1,6 @@
 package de.uni_hannover.wb_interaktionen_1.logic;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ import de.uni_hannover.wb_interaktionen_1.mic_cam.CamMicValidation;
 import de.uni_hannover.wb_interaktionen_1.rooms.Room;
 import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /** Class with necessary functions to log into the system.
@@ -44,19 +46,34 @@ public class Login {
     }
 
     /** Check whether the user is in the list
+     *
+     * @param userID The entered personal ID of the user.
+     * @param building The name of the selected building.
      * @return Returns user if the user is in the list of valid users, else return null
      */
-    public User validateCredentials(String userID){
+    public User validateCredentials(String userID, String building){
         if(isOnline(userID)){
             //if (!activeMicAndCam()) return null;
             System.out.println("Valid");
             try{
                 db.loginOnline(userID);
-                setCurrentUser(new User(userID, db.getUserName(userID), db.getRoomWithRoomID(0, db), null));
-                db.addUserToRoom(userID, 0);
+                int start_room = db.getStartingHall(building);
+                if(start_room != -1) {
+                    setCurrentUser(new User(userID, db.getUserName(userID), db.getRoomWithRoomID(start_room, db), null));
+                    db.addUserToRoom(userID, start_room);
+                } else {
+                    ArrayList<Room> rooms = db.getAllRooms(building);
+                    for(Room r : rooms){
+                        if(r.getType().equals("hall")){
+                            setCurrentUser(new User(userID, db.getUserName(userID), r, null));
+                            db.addUserToRoom(userID, r.getId());
+                            break;
+                        }
+                    }
+                }
                 return getCurrentUser();
             } catch (SQLException ex){
-                System.out.println("Error on setting DB status to online");
+                ex.printStackTrace();
             }
         }
         ErrorMessage m = new ErrorMessage();
@@ -72,7 +89,7 @@ public class Login {
             if(db.userIsInDB(getCurrentUser().getName())) {
                 db.setOnlineStatus(getCurrentUser().getName(), false);
             }
-            //threadUpdate.stopThread(); ToDo Richtig fixen!!!
+            //threadUpdate.stopThread();
         } catch (SQLException ex){
             System.out.println("Error when trying to communicating with the database");
         }
@@ -110,9 +127,8 @@ public class Login {
             cm.update();
             cm_input = "";
             if (!cm.getCam() || !cm.getMic()) {
-                if (cm.getCam() == false) cm_message += "Keine Webcam erkannt. Bitte überprüfen Sie Ihre Webcam-Verbindung.\n";
-                if (cm.getMic() == false) cm_message += "Kein Mikrofon erkannt. Bitt überprüfen Sie Inre Mikrofon-Verbindung.\n";
-                cm_message += "Versuchen Sie anschließend sich erneut zu verbinden.\n";
+                if (cm.getCam() == false) cm_message += "Es wurde keine Webcam erkannt.\nOhne Webcam besteht kein Zugang zum System.\nBitte überprüfen Sie ihre Webcam-Verbindung.";
+                if (cm.getMic() == false) cm_message += "Es wurde kein Mikrofon erkannt.\nOhne Mikrofon besteht kein Zugang zum System.\nBitte überprüfen Sie Inre Mikrofon-Verbindung.\n";
                 err.createError(cm_message);
                 return false;
             }
@@ -124,19 +140,48 @@ public class Login {
     /** Switch the window of the GUI to main scene when the user enters the correct ID
      * @param window Stage of the GUI
      * @param input ID of the user to be checked
-     * @param next Next scene that will be displayed when the credentials are correct
+     * @param l the login class
+     * @param m the main class
+     * @param building the name of the selected building
      */
-    public void switchScene(Stage window, String input, Scene next, GUIMain g, Main m){
-        setCurrentUser(input);
+    public void switchScene(Stage window, String input, Login l, Main m, String building){
+        ReadConfig rc;
+        try {
+            rc = new ReadConfig();
+            rc.write_Building(building);
+            rc.Update();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        setCurrentUser(input, building);
         if(currentUser != null) {
             System.out.println("You are currently logged in as: " + this.currentUser.getName());
-            threadUpdate = ThreadUpdate.getInstance(g, db, this, m);
+            // Build the Main GUI
+            GUIMain g = new GUIMain(l, db, m);
+            VBox layout_main = new VBox();
+            Scene mains = new Scene(layout_main, 700, 450);
+            layout_main.getChildren().add(g.createLogoutButton(window, m.getLoginScene()));
+            layout_main.getChildren().add(g.createMainGripPane2(false));
+            layout_main.getChildren().add(g.createHallControl(window, m));
+            window.setOnCloseRequest(e -> {
+                if (getCurrentUser() != null) {
+                    g.confirmLogout(window, null);
+                    try {
+                        db.closeConnection();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            threadUpdate = ThreadUpdate.getInstance(g, db, this, m, building);
             if (!threadUpdate.isAlive()) {
                 threadUpdate.start();
             }else{
                 threadUpdate.startThread();
             }
-            window.setScene(next);
+
+            window.setScene(mains);
         } else {
             System.out.println("ERROR");
         }
@@ -163,9 +208,10 @@ public class Login {
 
     /** Checks that the user has the permission to log into the system and sets the current user
      * @param input Name of the user that will be set as the current user of the system
+     * @param building The name of the selected building
      */
-    public void setCurrentUser(String input) {
-        this.currentUser = validateCredentials(input);
+    public void setCurrentUser(String input, String building) {
+        this.currentUser = validateCredentials(input, building);
     }
 
 

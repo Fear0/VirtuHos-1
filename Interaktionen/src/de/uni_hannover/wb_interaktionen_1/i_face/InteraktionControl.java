@@ -45,6 +45,8 @@ public class InteraktionControl {
                 return db.createConference(capacity, buildingID);
             } else if(type.equals("hall")){
                 return db.createHall(capacity, buildingID);
+            } else if(type.equals("lobby")){
+                return db.createStartHall(capacity, buildingID);
             }
         } catch (SQLException exception){ //Catch the exception the DB throws if a building with that name already exists
             try{ // Add the rooms normally without creating the building
@@ -93,7 +95,6 @@ public class InteraktionControl {
      * @return True, if the login was successfully and false, if not.
      */
     public boolean login(String userID){
-        deleteBuilding("Chris ist generft");
         if(login.isOnline(userID)){
             logout();
             try{
@@ -138,6 +139,34 @@ public class InteraktionControl {
                     ex.printStackTrace();
                 }
             }
+    }
+
+    /** Send the current user to the starting hall
+     * If there is no starting hall he will be sent to the first hall the query to the DB would return
+     * @param buildingID ID of the building the user joins
+     * @return ID of the hall the user has been added to, on error -1
+     */
+    public int sendUserToStartingHall(String buildingID){
+        try{
+            String userID = login.getCurrentUser().getId();
+            int start_room = db.getStartingHall(buildingID);
+            if(start_room != -1) {
+                db.addUserToRoom(userID, start_room);
+                return start_room;
+            } else {
+                ArrayList<Room> rooms = db.getAllRooms(buildingID);
+                for(Room r : rooms){
+                    if(r.getType().equals("hall")){
+                        db.addUserToRoom(userID, r.getId());
+                        return r.getId();
+                    }
+                }
+            }
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            return -1;
+        }
+        return -1;
     }
 
     /** Moves the user from one room to another. It has to be called, when the own user is moved to
@@ -246,16 +275,11 @@ public class InteraktionControl {
                 /* updating user in rooms; room name has to be room id, integer ... */
                 for (Room room : rooms) {
                     room.occupants = db.getAllUserInRoomAsUserList(room, db);
-                    System.out.print("RoomID: ");
-                    System.out.print(room.getId());
-                    System.out.print(" Occupants: ");
-                    System.out.print(room.occupants);
-                    System.out.println();
                 }
                 System.out.println();
 
                 /* Set online_status_2 (ask Alan for the purpose) */
-                db.updateOnline(login.getCurrentUser().getId());
+                // db.updateOnline(login.getCurrentUser().getId());
             }
         } catch (SQLException e){
             e.printStackTrace();
