@@ -41,7 +41,7 @@ public class MainMenuController {
     //Wechselt aus dem Hauptmenü in den Anzeigemodus
     public void onShowClicked() {
         String username = DatabaseCommunication.getUsername();
-        if (username == null) {
+        if (username == null || username.equals("")) {
             Alert alert = new Alert(Alert.AlertType.ERROR, Text.MAIN_MENU_CONTROLLER_NO_USERNAME);
             alert.getButtonTypes().setAll(Text.buttonTypeOk);
             alert.setTitle(Text.TITLE);

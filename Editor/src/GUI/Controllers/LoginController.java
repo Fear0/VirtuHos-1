@@ -32,6 +32,7 @@ public class LoginController {
         onCancel(event);*/
         String user = userField.getText().trim();
         if(IC.login(user)){
+            if(mainUsrField.getText() != null || !mainUsrField.getText().equals("")) IC.logout();
             SC.setID(user);
             String name = IC.getUserName(user);
             mainUsrField.setText(name);
