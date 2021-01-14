@@ -103,8 +103,7 @@ class PersonThread implements Runnable{
 
         while(!exit){
 
-            IC.checkRequest();
-
+            IC.updateUser();
 
             //wait 5 sec
             try {

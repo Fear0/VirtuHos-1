@@ -1,6 +1,7 @@
 package de.uni_hannover.wb_interaktionen_1.test_db;
 
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+//import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
 import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 import de.uni_hannover.wb_interaktionen_1.logic.User;
@@ -88,7 +89,14 @@ public class TestDB {
 
                 } else {
                     System.out.println("Connection Timeout User 404");
-                    System.exit(404);
+                    //ErrorMessage err = new ErrorMessage();
+                    //err.createExitError("Timeout Error, Programm wird geschlossen.");
+                    while(true){
+                        try {
+                            Thread.sleep(200);
+                        } catch(InterruptedException e) {
+                        }
+                    }
                 }
             }catch(InterruptedException ie){
                 System.out.println("Interrupt Communication User");
@@ -258,6 +266,13 @@ public class TestDB {
      */
     public void resetUser(String personalID) throws  SQLException {
         String sql = "UPDATE " + USER_TABLE + " SET online_status = false, online_status_2 = false, roomID = NULL, groupID = NULL WHERE personalID = ?";
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        intermediate.setString(1, personalID);
+        intermediate.executeUpdate();
+    }
+
+    public void resetRoomForUser(String personalID) throws  SQLException {
+        String sql = "UPDATE " + USER_TABLE + " SET roomID = NULL WHERE personalID = ?";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setString(1, personalID);
         intermediate.executeUpdate();
@@ -608,6 +623,25 @@ public class TestDB {
 
     /* room specific methods */
 
+    /** Returns the type of a room with the roomID
+     *
+     * @param roomID The ID of the room
+     * @return The type of the room (office, conference, hall)
+     * @throws SQLException In case of query failure due to external issues in DB or if
+     *                      someone changed one of the column names in the DB
+     * @author David Sasse
+     */
+    public String getRoomType(int roomID) throws SQLException{
+        String sql = "SELECT * FROM " + ROOM_TABLE + " WHERE roomID = ?";
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        intermediate.setInt(1, roomID);
+        ResultSet room = intermediate.executeQuery();
+        if (!room.next()){
+            return null;
+        }
+        return room.getString("type");
+    }
+
     /** Creates a list with all rooms
      *
      * @return the ArrayList with all rooms
@@ -652,7 +686,7 @@ public class TestDB {
         String sql = "SELECT * FROM " + ROOM_TABLE + " WHERE building_name = ?;";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.setString(1, building_name);
-        ResultSet rooms = executeQuery(sql);
+        ResultSet rooms = intermediate.executeQuery();
         while(rooms.next()) {
             if(rooms.getString("type").equals("office")){
                 res.add(new Office(
@@ -1032,11 +1066,11 @@ public class TestDB {
         intermediate.executeUpdate();
     }
 
-    /** Method to delete a document from an office
+    /** Method to delete a document in a given office
      *
-     * @param url URL of the document that will be deleted
-     * @param officeID ID of the office the document will be removed from
-     * @throws SQLException on error or failure with DB
+     * @param url URL of the document you want to delete
+     * @param officeID ID of the office you want to delete the document from
+     * @throws SQLException
      * @author David Sebode
      */
     public void deleteDocument(String url, int officeID) throws SQLException{
@@ -1133,6 +1167,30 @@ public class TestDB {
         PreparedStatement pstm = dbConnection.prepareStatement(building);
         pstm.setString(1, building_name);
         pstm.executeUpdate();
+    }
+
+    // building
+    public ObservableList<String> getAllBuildings() throws SQLException {
+        ObservableList<String> buildings = FXCollections.observableArrayList();
+        String buildings_sql = "SELECT * FROM " + BUILDING_TABLE + " ;";
+        ResultSet res = this.executeQuery(buildings_sql);
+        while(res.next()) {
+            buildings.add(res.getString("building_name"));
+        }
+        return buildings;
+    }
+
+    // building
+    public ArrayList<HallGroup> getAllHallGroups(String building_name) throws SQLException {
+        ArrayList<HallGroup> groups = new ArrayList<>();
+        String buildings_sql = "SELECT * FROM " + ROOM_TABLE + " JOIN " + HALL_TABLE + " using(roomID) " + " JOIN " + GROUP_TABLE + " using(roomID) WHERE building_name = ?;";
+        PreparedStatement pstm = dbConnection.prepareStatement(buildings_sql);
+        pstm.setString(1, building_name);
+        ResultSet res = pstm.executeQuery();
+        while(res.next()) {
+            groups.add(new HallGroup(res.getInt("groupID"), this));
+        }
+        return groups;
     }
 
     public boolean getComFailed(){
