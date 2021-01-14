@@ -299,7 +299,11 @@ class BuildingThread implements Runnable{
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
 
-            IC.checkRequest(showController.getBuilding().getName());
+            try{
+                IC.checkRequest(showController.getBuilding().getName());
+            } catch (NullPointerException ex){
+                IC.checkRequest(null);
+            }
 
             //wait 5 sec
             try {

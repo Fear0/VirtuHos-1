@@ -210,7 +210,12 @@ public class InteraktionControl {
      */
     public void checkRequest(String buildingID){
         try {
-            ArrayList<Room> rooms = db.getAllRooms(buildingID);//ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
+            ArrayList<Room> rooms;
+            if(buildingID != null){
+                rooms = db.getAllRooms(buildingID);//ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
+            } else {
+                rooms = db.getAllRooms();
+            }
             if (login.getCurrentUser() != null) {
                 User receiver = login.getCurrentUser();
                 ArrayList<Request> request = db.getRequests(receiver);
