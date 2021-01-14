@@ -31,6 +31,7 @@ public class ShowController {
     private String buildingName;
     private Person transferPerson;
     private BuildingThread thread;
+    private PersonThread pThread;
     private InteraktionControl IC;
     private String ID;
 
@@ -55,7 +56,10 @@ public class ShowController {
 
     //Lädt ein Gebäude und zeigt es an
     public void onLoadClicked() throws SQLException {
+        // Terminates the thread that prevents the User to get logged out while in Menu
+        pThread.end();
         //get the name of the building in the database and save it in buildingname
+
         building = DatabaseCommunication.loadDialog(IC);
         if (building != null){
             removeUser();
@@ -264,6 +268,10 @@ public class ShowController {
 
     public void setID(String ID){
         this.ID = ID;
+    }
+
+    public void setpThread(PersonThread p){
+        this.pThread = p;
     }
 }
 

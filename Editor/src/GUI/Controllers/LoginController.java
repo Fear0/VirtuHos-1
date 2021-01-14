@@ -2,6 +2,7 @@ package GUI.Controllers;
 
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
 import definitions.DatabaseCommunication;
+import definitions.Person;
 import definitions.Text;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -21,6 +22,7 @@ public class LoginController {
     private TextField mainUsrField;
     private InteraktionControl IC;
     private ShowController SC;
+    private PersonThread pThread;
 
     public void onConfirm(ActionEvent event) {
         /*
@@ -31,12 +33,19 @@ public class LoginController {
         }
         onCancel(event);*/
         String user = userField.getText().trim();
+        if(mainUsrField.getText() != null || !mainUsrField.getText().equals("")) IC.logout();
         if(IC.login(user)){
-            if(mainUsrField.getText() != null || !mainUsrField.getText().equals("")) IC.logout();
             SC.setID(user);
             String name = IC.getUserName(user);
             mainUsrField.setText(name);
             DatabaseCommunication.setUsername(name);
+            if(this.pThread == null){
+                this.pThread = new PersonThread(this.IC);
+                Thread t = new Thread(pThread, "person update");
+                t.setDaemon(true);
+                t.start();
+                SC.setpThread(pThread);
+            }
         }else{
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(Text.TITLE);
@@ -72,5 +81,9 @@ public class LoginController {
 
     public void setSC(ShowController SC){
         this.SC =SC;
+    }
+
+    public void EndPThread(){
+        pThread.end();
     }
 }

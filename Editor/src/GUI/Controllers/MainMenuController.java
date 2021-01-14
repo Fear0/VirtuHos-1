@@ -4,17 +4,20 @@ import GUI.MainMenu;
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
 import de.uni_hannover.wb_interaktionen_1.logic.Login;
 import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
+import definitions.Building;
 import definitions.DatabaseCommunication;
 import definitions.Text;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 public class MainMenuController {
@@ -22,6 +25,7 @@ public class MainMenuController {
 
     private InteraktionControl IC;
     private ShowController SC;
+    private PersonThread PThread;
 
     private @FXML TextField userField;
 
@@ -79,4 +83,41 @@ public class MainMenuController {
     public void setSC(ShowController SC){
         this.SC =SC;
     }
+
+    public void setPThread(PersonThread p){
+        this.PThread = p;
+    }
+}
+
+class PersonThread implements Runnable{
+    private volatile boolean exit = false;
+    private InteraktionControl IC;
+
+    public PersonThread(InteraktionControl IC){
+        this.IC = IC;
+
+    }
+
+    @Override
+    public void run() {
+
+        while(!exit){
+
+            IC.checkRequest();
+
+
+            //wait 5 sec
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                System.err.println("thread interrupted");
+            }
+
+        }
+    }
+
+    public void end(){
+        exit = true;
+    }
+
 }
