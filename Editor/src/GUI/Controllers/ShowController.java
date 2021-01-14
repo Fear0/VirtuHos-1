@@ -79,6 +79,20 @@ public class ShowController {
             buildingCanvas.setOnMouseClicked(this::onCanvasClicked);
             personCanvas.setOnMouseClicked(this::onCanvasClicked);
             lockCanvas.setOnMouseClicked(this::onCanvasClicked);
+            //add user to the middle of the first hall
+            Room temproom = null;
+            for(Room room : building.getRooms()){
+                if(room.getType() == RoomType.HALL){
+                    temproom = room;
+                    break;
+                }
+            }
+            if(temproom != null){
+                Person tempPerson = new Person(this.username, (temproom.getCoordinateX() + temproom.getWidth()/2 - (0.5 * building.getGridSize())),
+                        (temproom.getCoordinateY() + temproom.getHeight()/2 - (0.5 * building.getGridSize())));
+                DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                InteraktionMovePerson(temproom, false);
+            }
             building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
 
             //giving thread new building info if we switch buildings
