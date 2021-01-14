@@ -209,7 +209,6 @@ public class InteraktionControl {
      * This methode checks for requests on the database to the current user
      */
     public void checkRequest(){
-        System.out.printf("Test");
         try {
             ArrayList<Room> rooms = db.getAllRooms(); //ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
             if (login.getCurrentUser() != null) {

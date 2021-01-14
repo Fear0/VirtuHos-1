@@ -56,8 +56,8 @@ public class ShowController {
 
     //Lädt ein Gebäude und zeigt es an
     public void onLoadClicked() throws SQLException {
-        // Terminates the thread that prevents the User to get logged out while in Menu
-        pThread.end();
+
+
         //get the name of the building in the database and save it in buildingname
 
         building = DatabaseCommunication.loadDialog(IC);
@@ -80,6 +80,9 @@ public class ShowController {
             personCanvas.setOnMouseClicked(this::onCanvasClicked);
             lockCanvas.setOnMouseClicked(this::onCanvasClicked);
             building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
+
+
+
 
             //giving thread new building info if we switch buildings
             if(this.thread == null) {
@@ -273,6 +276,7 @@ public class ShowController {
     public void setpThread(PersonThread p){
         this.pThread = p;
     }
+
 }
 
 class BuildingThread implements Runnable{
@@ -300,7 +304,7 @@ class BuildingThread implements Runnable{
             building.redrawLocks(lockCanvas);
 
 
-            IC.checkRequest();
+            //IC.checkRequest();
 
             //wait 5 sec
             try {

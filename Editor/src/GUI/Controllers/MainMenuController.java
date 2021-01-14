@@ -25,7 +25,10 @@ public class MainMenuController {
 
     private InteraktionControl IC;
     private ShowController SC;
-    private PersonThread PThread;
+    private PersonThread PThread = null;
+    private LoginController LC;
+    private Parent Login;
+    private Stage LoginStage;
 
     private @FXML TextField userField;
 
@@ -61,19 +64,10 @@ public class MainMenuController {
 
     //Zeigt Login-Dialog an
     public void onLogin() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../LoginDialog.fxml"));
-        Parent parent = fxmlLoader.load();
-        LoginController ctrl = fxmlLoader.getController();
-        ctrl.setMainUsrField(userField);
-        ctrl.setIC(IC);
-        ctrl.setSC(SC);
-        Scene scene = new Scene(parent, 400, 200);
-        Stage stage = new Stage();
-        stage.setTitle("VirtuHoS Login");
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        stage.showAndWait();
+        LC.setMainUsrField(userField);
+        LC.setIC(IC);
+        LC.setSC(SC);
+        LoginStage.showAndWait();
     }
 
     public void setIC(InteraktionControl IC) {
@@ -87,12 +81,23 @@ public class MainMenuController {
     public void setPThread(PersonThread p){
         this.PThread = p;
     }
+
+    public void setLC(LoginController LC) {
+        this.LC = LC;
+    }
+
+    public void setLogin(Parent login) {
+        Login = login;
+    }
+
+    public void setLoginStage(Stage loginStage) {
+        LoginStage = loginStage;
+    }
 }
 
 class PersonThread implements Runnable{
     private volatile boolean exit = false;
     private InteraktionControl IC;
-
     public PersonThread(InteraktionControl IC){
         this.IC = IC;
 
@@ -100,9 +105,10 @@ class PersonThread implements Runnable{
 
     @Override
     public void run() {
-
+        int counter = 0;
         while(!exit){
 
+            System.out.println("Thread läuft " + counter++);
             IC.checkRequest();
 
 
@@ -114,6 +120,7 @@ class PersonThread implements Runnable{
             }
 
         }
+        System.out.println("Thread stopped");
     }
 
     public void end(){

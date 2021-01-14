@@ -1,6 +1,7 @@
 package GUI;
 
 import GUI.Controllers.EditorController;
+import GUI.Controllers.LoginController;
 import GUI.Controllers.MainMenuController;
 import GUI.Controllers.ShowController;
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
@@ -11,6 +12,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainMenu extends Application {
@@ -38,7 +40,19 @@ public class MainMenu extends Application {
         showController = showLoader.getController();
         show = new Scene(parent);
 
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("LoginDialog.fxml"));
+        Parent Login = fxmlLoader.load();
+        LoginController LoginControl = fxmlLoader.getController();
+        Scene scene = new Scene(Login, 400, 200);
+        Stage stage = new Stage();
+        stage.setTitle("VirtuHoS Login");
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(scene);
+
         MainMenuController ctrl = MMLoader.getController();
+        ctrl.setLoginStage(stage);
+        ctrl.setLC(LoginControl);
         ctrl.setIC(IC);
         ctrl.setSC(showController);
         EditorController ctrl2 = ELoader.getController();
