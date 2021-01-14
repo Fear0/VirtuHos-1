@@ -93,8 +93,9 @@ public class InteraktionControl {
      * @return True, if the login was successfully and false, if not.
      */
     public boolean login(String userID){
+        deleteBuilding("Chris ist generft");
         if(login.isOnline(userID)){
-
+            logout();
             try{
                 db.loginOnline(userID);
                 login.setCurrentUser(new User(userID, db.getUserName(userID), db.getRoomWithRoomID(0, db), null));
@@ -208,8 +209,9 @@ public class InteraktionControl {
      * This methode checks for requests on the database to the current user
      */
     public void checkRequest(){
+        System.out.printf("Test");
         try {
-            ArrayList<Room> rooms = db.getAllRooms();
+            ArrayList<Room> rooms = db.getAllRooms(); //ToDo Hier muss getAllRoomsInBuilding hin -> zu viele Daten
             if (login.getCurrentUser() != null) {
                 User receiver = login.getCurrentUser();
                 ArrayList<Request> request = db.getRequests(receiver);
@@ -224,6 +226,8 @@ public class InteraktionControl {
                         r.createWebcamRequest();
                     } else if (r.getType().equals("rejectwebcam")) {
                         r.createRejectMessage("webcam");
+                    } else if (r.getType().equals("leave")){
+                        receiver.getCurrent_meeting().leaveMeetingAs(receiver, db, receiver.getCurrent_room().getId());
                     } else if (r.getType().equals("self")) {
                         for (Room room : rooms) {
                             if (room.getId() == db.findRoomFor(r.getSender())) {
@@ -245,6 +249,19 @@ public class InteraktionControl {
             }
         } catch (SQLException e){
             e.printStackTrace();
+        }
+    }
+
+    /** Update the status of the user in the database so he appears in the system correctly.
+     *
+     */
+    public void updateUser(){
+        try{
+            if(login.getCurrentUser() != null){
+                db.updateOnline(login.getCurrentUser().getId());
+            }
+        } catch (SQLException ex){
+            ex.printStackTrace();
         }
     }
 
