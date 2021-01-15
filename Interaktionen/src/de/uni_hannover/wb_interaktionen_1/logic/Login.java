@@ -53,7 +53,7 @@ public class Login {
      */
     public User validateCredentials(String userID, String building){
         if(isOnline(userID)){
-            //if (!activeMicAndCam()) return null;
+            if (!activeMicAndCam()) return null;
             System.out.println("Valid");
             try{
                 db.loginOnline(userID);

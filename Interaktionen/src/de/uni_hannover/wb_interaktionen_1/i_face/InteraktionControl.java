@@ -95,6 +95,7 @@ public class InteraktionControl {
      * @return True, if the login was successfully and false, if not.
      */
     public boolean login(String userID){
+        //if (!login.activeMicAndCam()) return false;
         if(login.isOnline(userID)){
             logout();
             try{
