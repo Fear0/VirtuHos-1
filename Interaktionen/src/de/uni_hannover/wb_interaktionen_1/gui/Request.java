@@ -120,7 +120,7 @@ public class Request {
     public void createRejectMessage(String type){
         ErrorMessage m = new ErrorMessage();
         if (type.equals("join")) {
-            m.createError(sender_name + " hat ihre Einladung abgelehnt oder ihre Einladung ist abgelaufen.");
+            m.createError("Die Einladung wurde abgelehnt oder nicht beantwortet.");
         } else if (type.equals("webcam")) {
             m.createError(sender_name + " hat ihre Anfrage zur Aktivierung der Webcam abgelehnt oder ihre Anfrage ist abgelaufen.");
         }

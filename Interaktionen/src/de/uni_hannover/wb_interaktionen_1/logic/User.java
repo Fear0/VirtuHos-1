@@ -14,6 +14,7 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 /** Class User in which the necessary information to connect a user with the appropriate ID and name is stored.

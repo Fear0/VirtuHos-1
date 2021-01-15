@@ -11,7 +11,7 @@ import javafx.stage.Stage;
  * @author Joshua Berger
  */
 public class ErrorMessage {
-
+    private boolean clicked = false;
     /** This method creates a popup window containing an error message
      * @author Joshua Berger
      * @param message: The message to display in the error window

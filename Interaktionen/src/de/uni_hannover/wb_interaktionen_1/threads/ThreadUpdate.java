@@ -1,11 +1,12 @@
 package de.uni_hannover.wb_interaktionen_1.threads;
 
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+
 import de.uni_hannover.wb_interaktionen_1.Main;
 import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
 import de.uni_hannover.wb_interaktionen_1.gui.GUIMain;
 import de.uni_hannover.wb_interaktionen_1.gui.Request;
 import de.uni_hannover.wb_interaktionen_1.logic.Login;
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 import de.uni_hannover.wb_interaktionen_1.logic.User;
 import de.uni_hannover.wb_interaktionen_1.rooms.HallGroup;
 import de.uni_hannover.wb_interaktionen_1.rooms.Room;
@@ -16,7 +17,10 @@ import javafx.scene.control.ListView;
 import javafx.application.Platform;
 
 
+import java.awt.*;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +41,7 @@ public class ThreadUpdate extends Thread{
     private String building;
     private boolean comm_failed = false;
     private boolean stop_flag = false;
-
+    private boolean stop_create = false;
     //create an object of ThreadUpdateListView
     private static ThreadUpdate instance = null;
 
@@ -71,10 +75,7 @@ public class ThreadUpdate extends Thread{
             this.guimain = g;
             this.building = building;
             this.hallgroups = db.getAllHallGroups(building);
-        } catch (CommunicationsException ce) {
-            //reconnect to DB if communication fails
-            db.setComFailed(true);
-            System.out.println("Problem with Connection\n");
+
         } catch (SQLException e){
             e.printStackTrace();
         }
@@ -100,96 +101,105 @@ public class ThreadUpdate extends Thread{
         this.building = building;
     }
 
+    public void stop_create(boolean b){
+        this.stop_create = b;
+    }
+
+    public void check_connection(){
+
+        try{
+            db.userIsOnline(login.getCurrentUser().getId());
+        }catch (SQLNonTransientConnectionException ce){
+            //reconnect to DB if communication fails
+            System.out.println("Problem with Connection\n");
+            db.reconnect();
+        }catch(SQLException se){
+            se.printStackTrace();
+            System.out.println("Problem with SQL\n");
+        }
+    }
+
     @Override
     public void run(){
-        while (!this.isInterrupted()){
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        //Check for new hallgroups
-                        ArrayList<HallGroup> new_hallgroups = db.getAllHallGroups(building);
-                        if (hallgroups.size() == new_hallgroups.size()) {
-                            for (int i = 0; i < new_hallgroups.size(); i++) {
-                                if (!hallgroups.get(i).equals(new_hallgroups.get(i))) {
-                                    main.updatemain(main.getWindow());
+        while (!this.isInterrupted()) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Check for new hallgroups
+                            ArrayList<HallGroup> new_hallgroups = db.getAllHallGroups(building);
+                            if (hallgroups.size() == new_hallgroups.size()) {
+                                for (int i = 0; i < new_hallgroups.size(); i++) {
+                                    if (!hallgroups.get(i).equals(new_hallgroups.get(i))) {
+                                        main.updatemain(main.getWindow());
+                                    }
+                                }
+                            } else {
+                                main.updatemain(main.getWindow());
+                            }
+                            hallgroups = new_hallgroups;
+
+                            //Update the Listviews
+                            //Rooms
+                            ArrayList<Room> rooms = db.getAllRooms(building);
+                            ArrayList<ObservableList<String>> users_in_room_new = new ArrayList<>();
+                            users_in_room_new.add(db.getAllUserWithoutRoomObservable());
+
+                            for (Room r : rooms) {
+                                ObservableList<String> o = db.getAllUserInRoomObservable(r.getId());
+                                users_in_room_new.add(o);
+                            }
+
+                            for (int i = 0; i < list_room.size(); i++) {
+                                list_room.get(i).getItems().clear();
+                                list_room.get(i).setItems(users_in_room_new.get(i));
+                            }
+
+                            //Groups
+                            ArrayList<HallGroup> groups = db.getAllHallGroups(building);
+                            ArrayList<ObservableList<String>> users_in_group_new = new ArrayList<>();
+
+                            for (HallGroup g : groups) {
+                                ObservableList<String> o = db.getAllUserInHallGroupObservable(g.getId());
+                                users_in_group_new.add(o);
+                            }
+                            for (int i = 0; i < groups.size(); i++) {
+                                list_group.get(i).getItems().clear();
+                                list_group.get(i).setItems(users_in_group_new.get(i));
+                            }
+
+                            //Capacity Labels updaten
+                            for (int i = 0; i < capacityl.size(); i++) {
+                                if (i == 0) {
+                                    capacityl.get(0).setText("Kapazität: " + users_in_room_new.get(0).size());
+                                } else if (i <= rooms.size()) {
+                                    capacityl.get(i).setText("Kapazität: " + users_in_room_new.get(i).size() + "/" + rooms.get(i - 1).getCapacity());
+                                } else {
+                                    //capacityl.get(i).setText("Kapazität: " + hallgroups.get(i - rooms.size()).s);
                                 }
                             }
-                        } else {
-                            main.updatemain(main.getWindow());
-                        }
-                        hallgroups = new_hallgroups;
 
-                        //Update the Listviews
-                        //Rooms
-                        ArrayList<Room> rooms = db.getAllRooms(building);
-                        ArrayList<ObservableList<String>> users_in_room_new = new ArrayList<>();
-                        users_in_room_new.add(db.getAllUserWithoutRoomObservable());
+                            //Check for a request to join a room
+                            checkRequest();
 
-                        for (Room r : rooms) {
-                            ObservableList<String> o = db.getAllUserInRoomObservable(r.getId());
-                            users_in_room_new.add(o);
-                        }
 
-                        for (int i = 0; i < list_room.size(); i++) {
-                            list_room.get(i).getItems().clear();
-                            list_room.get(i).setItems(users_in_room_new.get(i));
-                        }
-
-                        //Groups
-                        ArrayList<HallGroup> groups = db.getAllHallGroups(building);
-                        ArrayList<ObservableList<String>> users_in_group_new = new ArrayList<>();
-
-                        for (HallGroup g : groups) {
-                            ObservableList<String> o = db.getAllUserInHallGroupObservable(g.getId());
-                            users_in_group_new.add(o);
-                        }
-                        for (int i = 0; i < groups.size(); i++) {
-                            list_group.get(i).getItems().clear();
-                            list_group.get(i).setItems(users_in_group_new.get(i));
-                        }
-
-                        //Capacity Labels updaten
-                        for(int i = 0; i < capacityl.size(); i++){
-                            if(i == 0){
-                                capacityl.get(0).setText("Kapazität: " + users_in_room_new.get(0).size());
-                            } else if (i <= rooms.size()){
-                                capacityl.get(i).setText("Kapazität: " + users_in_room_new.get(i).size() + "/" + rooms.get(i - 1).getCapacity());
-                            } else {
-                                //capacityl.get(i).setText("Kapazität: " + hallgroups.get(i - rooms.size()).s);
-                            }
-                        }
-
-                        //Check for a request to join a room
-                        checkRequest();
-
-                    } catch (CommunicationsException ce) {
-                        //reconnect to DB if communication fails
-                        db.setComFailed(true);
-                        System.out.println("Problem with Connection\n");
-
-                    } catch (SQLException ex) {
-                        if(!db.getComFailed()){
+                        } catch (SQLException ex) {
                             System.out.println("Problem with SQL in TestDB\n");
                         }
+
                     }
-                    if(db.getComFailed() == true){
-                        ErrorMessage err = new ErrorMessage();
-                        err.createError("Überprüfe deine Internetverbindung.");
-                        db.reconnect();
-                        db.setComFailed(false);
-                    }
-                }
-            });
+                });
 
 
-            do{
-                try{
+            do {
+                try {
                     sleep(TimeUnit.SECONDS.toMillis(2));
-                } catch (InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }while(this.stop_flag);
+            } while (this.stop_flag);
+
+            check_connection();
 
 
         }
@@ -254,11 +264,6 @@ public class ThreadUpdate extends Thread{
                 /* Set online_status_2 (ask Alan for the purpose) */
                 db.updateOnline(login.getCurrentUser().getId());
             }
-        } catch (CommunicationsException ce) {
-            //reconnect to DB if communication fails
-            db.setComFailed(true);
-            System.out.println("Problem with Connection\n");
-
         } catch (SQLException e){
             e.printStackTrace();
         }

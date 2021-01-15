@@ -99,14 +99,19 @@ public class Room {
         if (user.getCurrent_meeting() != null) {
             user.getCurrent_meeting().leaveMeetingAs(user, db, roomID);
         }
+        try {
+            db.resetRoomForUser(user.getId());
+            update_fromDB(db);
 
-        occupants.remove(user);
 
-        //We dont need this at the moment, because first useer is not added to the meeting (see addUser function)
+        //We dont need this at the moment, because first user is not added to the meeting (see addUser function)
         // To close meetings with only one person left
-        /*if (occupants.size() == 1) {
-            occupants.get(0).getCurrent_meeting().leaveMeetingAs(occupants.get(0), db, roomID);
-        }*/
+            if (occupants.size() == 1 && (db.getRoomType(roomID).equals("office") || db.getRoomType(roomID).equals("conference"))) {
+                db.sendRequest(user.getId(), occupants.get(0).getId(), "leave");
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     /** Quick function to test if a user is in the room.

@@ -1,5 +1,7 @@
 package de.uni_hannover.wb_interaktionen_1.bbb_api;
 
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -15,7 +17,7 @@ import java.util.UUID;
 public class BBBMeeting {
 
     //Start of the Link. It is ever the same.
-    private String API_URL = "https://bbb2.se.uni-hannover.de/bigbluebutton/api/";
+    //private String API_URL = "https://bbb2.se.uni-hannover.de/bigbluebutton/api/";
 
     /** Creates a new meeting
      *
@@ -43,12 +45,14 @@ public class BBBMeeting {
      * @param meetingID ID of the meeting to join.
      * @param password Password for the meeting (attendee Password or moderator password).
      * @param fullName Name that is displayed in the meeting.
+     * @param userid The personalID of the User
      * @return The URL for joining the meeting.
      */
-    public String joinMeeting(String meetingID, String password, String fullName){
+    public String joinMeeting(String meetingID, String password, String fullName, String userid){
         String queryString = "meetingID=" + meetingID +
                         "&password=" + password +
                         "&fullName=" + fullName +
+                        "&userID=" + userid +
                         "&userdata-bbb_skip_video_preview=true" + //No effect when not joining automatically with a webcam
                         "&userdata-bbb_auto_join_audio=true" +
                         "&userdata-bbb_skip_check_audio=true" +
@@ -73,12 +77,14 @@ public class BBBMeeting {
      * @param meetingID Meeting ID of the meeting
      * @param password Password for the meeting
      * @param fullName Name that will be displayed in the meeting
+     * @param userid The personalID of the User
      * @return URL after joining the meeting
      */
-    public String joinMeetingWithCam(String meetingID, String password, String fullName){
+    public String joinMeetingWithCam(String meetingID, String password, String fullName, String userid){
         String queryString = "meetingID=" + meetingID +
                 "&password=" + password +
                 "&fullName=" + fullName +
+                "&userID=" + userid +
                 "&userdata-bbb_auto_join_audio=true" +
                 "&userdata-bbb_skip_check_audio=true" +
                 "&userdata-bbb_listen_only_mode=false" +
@@ -138,29 +144,36 @@ public class BBBMeeting {
      * @return The XML response from the BBB-Server as a string and for the join the url to join the meeting as a string.
      */
     public String CallAPI(String apiMethod, String queryString) {
-        String requestUri;
-        // Creates the complete URL for the API call.
-        if (queryString == null) { //Case to get all ongoing meetings.
-            requestUri = API_URL + apiMethod + "?checksum=" + this.ComputeChecksum(apiMethod, queryString);
-        } else { //Case for all other API calls.
-            requestUri = API_URL + apiMethod + '?' + queryString + "&checksum=" + this.ComputeChecksum(apiMethod, queryString);
-        }
-
-        // For the join methode only URL as a string should be returned, because we have to open this in the browser.
-        if(apiMethod == "join"){
-            return requestUri;
-        }
-
-        // The HttpClient calls the url and writes the answer from the BBB-Server in a String
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(requestUri)).build();
         try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return response.body();
-        } catch (IOException ex){
-            ex.printStackTrace();
-        } catch (InterruptedException ex){
-            ex.printStackTrace();
+            String requestUri;
+            ReadConfig config = new ReadConfig();
+            String API_URL = config.API_URL;
+            // Creates the complete URL for the API call.
+            if (queryString == null) { //Case to get all ongoing meetings.
+                requestUri = API_URL + apiMethod + "?checksum=" + this.ComputeChecksum(apiMethod, queryString);
+            } else { //Case for all other API calls.
+                requestUri = API_URL + apiMethod + '?' + queryString + "&checksum=" + this.ComputeChecksum(apiMethod, queryString);
+            }
+
+            // For the join methode only URL as a string should be returned, because we have to open this in the browser.
+            if(apiMethod == "join"){
+                return requestUri;
+            }
+
+            // The HttpClient calls the url and writes the answer from the BBB-Server in a String
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(requestUri)).build();
+            try {
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                return response.body();
+            } catch (IOException ex){
+                ex.printStackTrace();
+            } catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+            return null;
+        } catch (Exception e) {
+            System.out.println("Exception: '"+e);
         }
         return null;
     }

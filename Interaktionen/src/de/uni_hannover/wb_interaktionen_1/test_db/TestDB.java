@@ -1,18 +1,20 @@
 package de.uni_hannover.wb_interaktionen_1.test_db;
-
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
-//import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
-import de.uni_hannover.wb_interaktionen_1.gui.Request;
-import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
-import de.uni_hannover.wb_interaktionen_1.logic.User;
-import de.uni_hannover.wb_interaktionen_1.rooms.*;
-import de.uni_hannover.wb_interaktionen_1.threads.ThreadUpdateData;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
+/* From this project */
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+import de.uni_hannover.wb_interaktionen_1.Main;
+import de.uni_hannover.wb_interaktionen_1.gui.ErrorMessage;
+import de.uni_hannover.wb_interaktionen_1.gui.Request;
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
+import de.uni_hannover.wb_interaktionen_1.threads.ThreadUpdateData;
+import de.uni_hannover.wb_interaktionen_1.logic.Login;
+import de.uni_hannover.wb_interaktionen_1.logic.User;
+import de.uni_hannover.wb_interaktionen_1.rooms.*;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /** TestDB class. An instance of this class will let you retrieve data from the Database without using any SQL.
  * You should handle the SQLException as this class only passes the exception to the caller.
@@ -89,14 +91,7 @@ public class TestDB {
 
                 } else {
                     System.out.println("Connection Timeout User 404");
-                    //ErrorMessage err = new ErrorMessage();
-                    //err.createExitError("Timeout Error, Programm wird geschlossen.");
-                    while(true){
-                        try {
-                            Thread.sleep(200);
-                        } catch(InterruptedException e) {
-                        }
-                    }
+                    System.exit(1);
                 }
             }catch(InterruptedException ie){
                 System.out.println("Interrupt Communication User");
@@ -127,7 +122,7 @@ public class TestDB {
      * @author Meikel Kokowski
      * @deprecated
      * */
-    public void updateData(User user, ArrayList<Room> rooms, ThreadUpdateData thread) throws InterruptedException, SQLException {
+    public void updateData(User user, ArrayList<Room> rooms, ThreadUpdateData thread) throws java.lang.InterruptedException, SQLException {
         while(!thread.stop_flag) {
             /* updating user in rooms; room name has to be room id, integer ... */
             for(Room room : rooms) {
@@ -935,6 +930,23 @@ public class TestDB {
         }
     }
 
+    /** Method to get the starting hall
+     *
+     * @param buildingID ID of the building you want to get the starting hall for
+     * @return ID of the starting hall for a given building, else -1 on error
+     * @throws SQLException : In case the query fails
+     * @author David Sebode
+     */
+    public int getStartingHall(String buildingID) throws SQLException{
+        String s_hall = "SELECT roomID FROM " + ROOM_TABLE + " JOIN " + HALL_TABLE + " using(roomID)" +
+                " WHERE building_name = ? AND start_room = ?;";
+        PreparedStatement intermediate = dbConnection.prepareStatement(s_hall);
+        intermediate.setString(1, buildingID);
+        intermediate.setInt(2, 1);
+        ResultSet res = intermediate.executeQuery();
+        return res.next() ? res.getInt("roomID") : -1;
+    }
+
     /** Method to get a meeting for a group.
      *
      * @param groupID : groupID to get the meeting from
@@ -1193,30 +1205,6 @@ public class TestDB {
         return groups;
     }
 
-    /** Method to get the starting hall
-     *
-     * @param buildingID ID of the building you want to get the starting hall for
-     * @return ID of the starting hall for a given building, else -1 on error
-     * @throws SQLException : In case the query fails
-     * @author David Sebode
-     */
-    public int getStartingHall(String buildingID) throws SQLException{
-        String s_hall = "SELECT roomID FROM " + ROOM_TABLE + " JOIN " + HALL_TABLE + " using(roomID)" +
-                " WHERE building_name = ? AND start_room = ?;";
-        PreparedStatement intermediate = dbConnection.prepareStatement(s_hall);
-        intermediate.setString(1, buildingID);
-        intermediate.setInt(2, 1);
-        ResultSet res = intermediate.executeQuery();
-        return res.next() ? res.getInt("roomID") : -1;
-    }
-
-    public boolean getComFailed(){
-        return this.comFailed;
-    }
-
-    public void setComFailed(boolean comFailed) {
-        this.comFailed = comFailed;
-    }
 
     public void closeConnection() throws SQLException{
         this.dbConnection.close();

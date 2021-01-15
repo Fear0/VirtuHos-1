@@ -2,6 +2,7 @@ package Server;
 
 
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
 
 import java.sql.*;
 import java.util.Properties;
@@ -11,10 +12,9 @@ import java.util.Properties;
  * @author Alan Dryaev, Meikel Kokowski
  * */
 public class Server {
-    final private int check_ms = 30000;
     private Connection dbConnection;
     private Properties info;
-
+    private ReadConfig config;
     //attempts of reconnection
     private int timeout_counter = 0;
     //time per reconnect attempt + 1000ms
@@ -24,9 +24,12 @@ public class Server {
 
     final private String DATABASE_NAME = "VirtuHoS_1.";
     final private String USER_TABLE = DATABASE_NAME + "i1_user";
+    /*
     final private String url = "jdbc:mysql://goethe.se.uni-hannover.de:3306/?user=Interaktion_1";
     final private String user = "Interaktion_1";
     final private String password = "JVx;2brXZzFq";
+    */
+
 
 
     /** Server Constructor calling initialize function
@@ -35,9 +38,14 @@ public class Server {
      * @author Alan Dryaev
      */
     public Server() {
+        try {
+            config = new ReadConfig();
+        } catch(Exception e) {
+            System.out.println("Config kann nicht gelesen werden");
+        }
         info = new Properties();
-        info.put("user", user);
-        info.put("password", password);
+        info.put("user", config.user);
+        info.put("password", config.password);
         this.connect();
     }
 
@@ -48,27 +56,27 @@ public class Server {
     public void connect(){
         this.dbConnection = null;
         try {
-            this.dbConnection = DriverManager.getConnection(url, info);
+            this.dbConnection = DriverManager.getConnection(config.url, info);
             if(this.dbConnection!=null) {
                 timeout_counter = 0;
-                System.out.println("Successfully connected to DB");
+                System.out.println("Erfolgreich zum Server verbunden.");
             }else{
-                System.out.println("dbConnection is invalid");
+                System.out.println("URL ist ungültig oder konnte keine Verbindung herstellen");
                 System.exit(1);
             }
 
         }catch(CommunicationsException ce){
             try {
-                System.out.println("Failed to connect to DB");
+                System.out.println("Konnte keine Verbindung zum Server herstellen");
                 if(timeout_counter == 0){
-                    System.out.println("Check your Internet Connection Error 403");
+                    System.out.println("Überprüfe deine Internetverbindung");
                     System.exit(403);
                 }
                 if(timeout_counter < TIMEOUT_LIMIT) {
                     Thread.sleep(timeout_ms);
 
                 } else {
-                    System.out.println("Connection Timeout Server Error 404");
+                    System.out.println("Timeout, Verbindung zum Server abgebrochen");
                     System.exit(404);
                 }
             }catch(InterruptedException ie){
@@ -76,7 +84,7 @@ public class Server {
             }
         }catch(SQLException sqe){
 
-            System.out.println("Invalid Data SQL");
+            System.out.println("Problem mit SQL");
             System.exit(1);
         }
     }
@@ -85,16 +93,32 @@ public class Server {
         try {
             do {
                 this.timeout_counter++;
-                System.out.printf("Retry to Connect to DB %d/%d\n", timeout_counter, TIMEOUT_LIMIT);
+                System.out.printf("Versuche erneut zum Server zu verbinden...%d/%d\n", timeout_counter, TIMEOUT_LIMIT);
                 Thread.sleep(1000);
                 this.connect();
             } while (this.dbConnection == null);
         }catch(InterruptedException ie){
-            System.out.println("Interrupt Communication Server");
+            System.out.println("Probleme mit der Verbidnung zum Server");
         }
     }
 
 
+    private int checkUserStatus(boolean on_stat) throws SQLException{
+        String sql = "SELECT COUNT(*) FROM " + USER_TABLE + " WHERE online_status = ?";
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        intermediate.setBoolean(1, on_stat);
+        ResultSet res = intermediate.executeQuery();
+        res.next();
+        return res.getInt(1);
+    }
+
+    private int getUserCount() throws SQLException{
+        String sql = "SELECT COUNT(*) FROM " + USER_TABLE ;
+        PreparedStatement intermediate = dbConnection.prepareStatement(sql);
+        ResultSet res = intermediate.executeQuery();
+        res.next();
+        return res.getInt(1);
+    }
 
     /*------------------------------- User specific Methods ------------------------------------- */
 
@@ -103,6 +127,9 @@ public class Server {
      * @author Alan Dryaev
      */
     public void setOffline() throws  SQLException {
+
+        int on_before = checkUserStatus(true);
+
         String sql = "UPDATE " + USER_TABLE + " SET online_status = false, roomID = NULL, groupID = NULL WHERE online_status XOR online_status_2";
         PreparedStatement intermediate = dbConnection.prepareStatement(sql);
         intermediate.executeUpdate();
@@ -110,16 +137,26 @@ public class Server {
         sql = "UPDATE " + USER_TABLE + " SET online_status_2 = false WHERE online_status_2 = true";
         intermediate = dbConnection.prepareStatement(sql);
         intermediate.executeUpdate();
+
+        int on_users = checkUserStatus(true);
+
+        System.out.printf("Aktive Nutzer: %d / %d, %d Nutzer wurden abgemeldet\r", on_users, getUserCount(),on_before - on_users);
+
     }
 
     private void setInactiveUsersOffline() {
-        int counter = 0;
+        int on_users = 0;
+        System.out.printf("Setze alle inaktiven Nutzer auf dem Server offline...\n");
         while(true) {
             try {
-                System.out.printf("Setting all inactive Users offline %d\n", counter);
+                int timer = 0;
                 this.setOffline();
-                Thread.sleep(this.check_ms);
-                counter++;
+                while(timer < config.check_ms) {
+                    timer += config.check_ms / 5;
+                    Thread.sleep(config.check_ms / 5);
+                    on_users = checkUserStatus(true);
+                    System.out.printf("Aktive Nutzer: %d / %d\r", on_users, getUserCount());
+                }
             } catch (CommunicationsException ce) {
                 System.out.println("Disconnected from DB");
                 //Reconnects to DB if Server loses connection to DB

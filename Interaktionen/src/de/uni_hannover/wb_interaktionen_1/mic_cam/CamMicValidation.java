@@ -1,7 +1,12 @@
 package de.uni_hannover.wb_interaktionen_1.mic_cam;
 import javax.sound.sampled.*;
+
+import de.uni_hannover.wb_interaktionen_1.website.WebsiteOpener;
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
+
+import static org.opencv.videoio.Videoio.*;
+
 
 public class CamMicValidation {
     private boolean camConnected;
@@ -10,8 +15,8 @@ public class CamMicValidation {
 
     public CamMicValidation(){
 
-        this.camConnected = true;
-        this.micConnected = true;
+        this.camConnected = false;
+        this.micConnected = false;
         this.update();
 
     }
@@ -29,13 +34,29 @@ public class CamMicValidation {
             micConnected = false;
 
         //detect Webcam
+        WebsiteOpener wo = new WebsiteOpener("mac");
+        boolean is_mac = wo.isMac();
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        VideoCapture capture = new VideoCapture(2);
-        //if cam wasn't found set variable on false
-        if(capture.isOpened())
-            camConnected = true;
-        else
-            camConnected = false;
+        for(int i = 0; i < 10; i++) {
+            VideoCapture capture;
+            if(is_mac){
+                capture = new VideoCapture(i);
+            } else {
+                capture = new VideoCapture(i, CAP_DSHOW);
+            }
+
+            //if cam wasn't found set variable on false
+            if (capture.isOpened()) {
+                camConnected = true;
+                capture.release();
+                break;
+            }
+            else{
+                camConnected = false;
+
+            }
+            capture.release();
+        }
     }
 
     public boolean getCam() {

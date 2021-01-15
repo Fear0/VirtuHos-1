@@ -3,7 +3,15 @@ package de.uni_hannover.wb_interaktionen_1.logic;
 import java.io.*;
 import java.util.Properties;
 
+
+/**
+ * A class to read and edit the config file
+ * The constructor already reads the file and saves the config values as variables
+ * write + key functions can be used to refactor the config file
+ * while Update updates the class variables and Reset resets the config file to default
+ */
 public class ReadConfig {
+
     public String url;
     public String user;
     public String password;
@@ -11,6 +19,8 @@ public class ReadConfig {
     public String API_URL;
     public String Building;
     InputStream inputS;
+    //server
+    public int check_ms;
 
     public ReadConfig() throws IOException {
 
@@ -32,6 +42,7 @@ public class ReadConfig {
             DATABASE_NAME = prop.getProperty("DATABASE_NAME");
             API_URL = prop.getProperty("API_URL");
             Building = prop.getProperty("Building");
+            check_ms = Integer.parseInt(prop.getProperty("check_interval_in_seconds")) * 1000;
         } catch (Exception e) {
             System.out.println("Exception: "+e);
         } finally {

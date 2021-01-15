@@ -10,8 +10,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.lang.*;
 import java.sql.SQLException;
@@ -20,7 +22,7 @@ import de.uni_hannover.wb_interaktionen_1.gui.GUIMain;
 import de.uni_hannover.wb_interaktionen_1.logic.Login;
 import de.uni_hannover.wb_interaktionen_1.threads.ThreadUpdateData;
 
-public class Main extends Application {
+public class Main extends Application{
 
     Stage window;
     Scene login, mains;
@@ -37,11 +39,11 @@ public class Main extends Application {
         return database;
     }
 
-    public Stage getWindow() {
+    public Stage getWindow(){
         return window;
     }
 
-    public Scene getLoginScene() {
+    public Scene getLoginScene(){
         return login;
     }
 
@@ -51,17 +53,23 @@ public class Main extends Application {
         database = new TestDB();
         log = new Login(database);
         g = new GUIMain(log, database, this);
-        try {
+        try{
             rc = new ReadConfig();
-        } catch (IOException e) {
+        } catch (IOException e){
             e.printStackTrace();
         }
 
     }
 
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) throws Exception{
         window = primaryStage;
         //Login Form
+        Text text = new Text();
+        String text_in = "Personalnummer:";
+        text.setText(text_in);
+        Text text_2 = new Text();
+        String text_in_2 = "Gebäude:";
+        text_2.setText(text_in_2);
         TextField nameInput = new TextField();
         ComboBox<String> building = new ComboBox<String>(getDB().getAllBuildings());
         building.setValue(rc.Building);
@@ -72,7 +80,7 @@ public class Main extends Application {
         //Layout
         VBox layout_login = new VBox();
         layout_login.setPadding(new Insets(20, 20, 20, 20));
-        layout_login.getChildren().addAll(nameInput, building, button_login);
+        layout_login.getChildren().addAll(text, nameInput, text_2, building, button_login);
         login = new Scene(layout_login, 300, 250);
 
         //Launch
@@ -81,11 +89,11 @@ public class Main extends Application {
         window.show();
     }
 
-    public void updatemain(Stage window) {
+    public void updatemain(Stage window){
         //This is used to avoid a second reload of the GUI when the current user adds or removes a hallgroup
         try {
             log.getThreadUpdate().setHallgroups(getDB().getAllHallGroups(rc.Building));
-        } catch (SQLException e) {
+        } catch (SQLException e){
             e.printStackTrace();
         }
 
@@ -107,5 +115,6 @@ public class Main extends Application {
         window.setTitle("VirtuHoS");
         window.show();
     }
+
 
 }

@@ -231,7 +231,13 @@ public class GUIMain {
             for (HallGroup g : hall_groups){
                 if(selectedgroup.equals("hall_group_" + g.getId())){
                     try{
-                        db.deleteGroup(g.getId());
+                        if(db.getAllUserInHallGroupObservable(g.getId()).size() == 0) {
+                            db.deleteGroup(g.getId());
+                        } else {
+                            ErrorMessage er = new ErrorMessage();
+                            er.createError("Sie können die Gruppe nicht löschen, da sich noch ein oder mehrere Benutzer in ihr befinden.");
+                            return;
+                        }
                     } catch (SQLException s){
                         s.printStackTrace();
                     }
@@ -362,7 +368,7 @@ public class GUIMain {
         grid.setHgap(10);
 
         // Only used to display all users. Later only the online users have to be displayed. Then it can be removed
-        Label startl = new Label("Offline Users");
+        Label startl = new Label("Offline Nutzer");
         ObservableList<String> o = FXCollections.observableArrayList();
 
         try {
@@ -391,7 +397,22 @@ public class GUIMain {
 
             if(i < existent_rooms.size()){
                 int roomID = existent_rooms.get(i).getId();
-                l = new Label(existent_rooms.get(i).getType() + "_" + roomID);
+                switch (existent_rooms.get(i).getType()) {
+                    case "conference":
+                        l = new Label("Besprechungsraum " + roomID);
+                        break;
+                    case "hall":
+                        l = new Label("Halle " + roomID);
+                        break;
+                    case "office":
+                        l = new Label("Büro " + roomID);
+                        break;
+                    case "hall_group":
+                        l = new Label("HallenGruppe " + roomID);
+                        break;
+                    default:
+                        l = new Label(existent_rooms.get(i).getType() + "_" + roomID);
+                }
                 try {
                     user_list = db.getAllUserInRoomObservable(roomID);
                 } catch (SQLException e){
@@ -441,7 +462,7 @@ public class GUIMain {
                 int groupID = hall_groups.get(i - existent_rooms.size()).getId();
                 l = new Label();
                 try {
-                    l.setText("hall_group_" + groupID + " (Hall: " + db.getCorrespondingHalltoHallGroup(groupID) + ")");
+                    l.setText("HallenGruppe " + groupID + " (Halle: " + db.getCorrespondingHalltoHallGroup(groupID) + ")");
 
                     user_list = db.getAllUserInHallGroupObservable(groupID);
                 } catch (SQLException e){
@@ -547,9 +568,9 @@ public class GUIMain {
                                 e.createError("Please enter the hall first! (Fehlerfall nur relevant im Mockup tbh)");
                                 return;
                             } else {
-                                if (login.currentUser.getCurrent_room() != null) {
+                                /*if (login.currentUser.getCurrent_room() != null) {
                                     login.currentUser.getCurrent_room().leave_Room(login.currentUser, db, login.currentUser.getCurrent_room().getId());
-                                }
+                                }*/
                                 g.addUser(login.currentUser);
                             }
                         }
@@ -563,7 +584,7 @@ public class GUIMain {
                 listView.getItems().addAll(list);
                 dragCompleted = true;
             }
-            // Invite another user in the same room
+        // Invite another user in the same room
         } else if (login.getCurrentUser().getCurrent_room().getId() == roomID) {
             try {
                 if (db.getAllUserInRoom(roomID).size() < db.getRoomWithRoomID(roomID,db).getCapacity()) {

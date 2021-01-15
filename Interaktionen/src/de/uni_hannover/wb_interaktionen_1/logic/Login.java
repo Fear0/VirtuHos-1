@@ -120,19 +120,16 @@ public class Login {
      */
     public boolean activeMicAndCam(){
         CamMicValidation cm = new CamMicValidation();
-        String cm_input = "yes";
 
-        while(cm_input.equals("yes")) {
-            String cm_message = "";
-            cm.update();
-            cm_input = "";
+        String cm_message = "";
+        cm.update();
             if (!cm.getCam() || !cm.getMic()) {
                 if (cm.getCam() == false) cm_message += "Es wurde keine Webcam erkannt.\nOhne Webcam besteht kein Zugang zum System.\nBitte überprüfen Sie ihre Webcam-Verbindung.";
                 if (cm.getMic() == false) cm_message += "Es wurde kein Mikrofon erkannt.\nOhne Mikrofon besteht kein Zugang zum System.\nBitte überprüfen Sie Inre Mikrofon-Verbindung.\n";
                 err.createError(cm_message);
                 return false;
             }
-        }
+
         return true;
     }
 

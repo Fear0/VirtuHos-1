@@ -56,12 +56,12 @@ public class Meeting extends BBBMeeting {
         try {
             if (!db.hasMeeting(roomID)){
                 db.setMeeting(roomID, meetingID);
-                String url = joinMeeting(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"));
+                String url = joinMeeting(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"), user.getId());
                 user.setCreator(true);
                 user.openWebpage(url);
             } else {
                 user.setCreator(false);
-                user.openWebpage(joinMeeting(db.getMeeting(roomID), attendeePW, user.getName().replaceAll(" ", "_")));
+                user.openWebpage(joinMeeting(db.getMeeting(roomID), attendeePW, user.getName().replaceAll(" ", "_"), user.getId()));
                 //user.openWebpage(db.getMeeting(roomID));
             }
         } catch (SQLException e) {
@@ -74,12 +74,12 @@ public class Meeting extends BBBMeeting {
         try {
             if (!db.hasMeeting(roomID)){
                 db.setMeeting(roomID, meetingID);
-                String url = joinMeetingWithCam(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"));
+                String url = joinMeetingWithCam(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"), user.getId());
                 user.setCreator(true);
                 user.openWebpage(url);
             } else {
                 user.setCreator(false);
-                user.openWebpage(joinMeetingWithCam(db.getMeeting(roomID), attendeePW, user.getName().replaceAll(" ", "_")));
+                user.openWebpage(joinMeetingWithCam(db.getMeeting(roomID), attendeePW, user.getName().replaceAll(" ", "_"), user.getId()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -92,10 +92,10 @@ public class Meeting extends BBBMeeting {
             db.addUserToGroup(user.getId(), groupID);
             if (db.getAllUserInHallGroupObservable(groupID).size() == 1){
                 db.setMeetingGroup(groupID, meetingID);
-                String url = joinMeeting(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"));
+                String url = joinMeeting(this.meetingID, attendeePW, user.getName().replaceAll(" ", "_"), user.getId());
                 user.openWebpage(url);
             } else {
-                user.openWebpage(joinMeeting(db.getMeetingGroup(groupID), attendeePW, user.getName().replaceAll(" ", "_")));
+                user.openWebpage(joinMeeting(db.getMeetingGroup(groupID), attendeePW, user.getName().replaceAll(" ", "_"), user.getId()));
             }
         } catch (SQLException e) {
             e.printStackTrace();
