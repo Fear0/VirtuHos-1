@@ -41,7 +41,7 @@ public class Main {
         Database db = new Database();
         db.setAnalyse(analyse);
         ReadXMLSAXParser parser = new ReadXMLSAXParser();
-        GUIThread guiThread = new GUIThread(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        GUIThread guiThread = new GUIThread(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers(), null);
         //just for test
         db.deleteAllUsers();
         //just for test

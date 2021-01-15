@@ -2,6 +2,8 @@ package wb.analyse1.GUI;
 
 import wb.analyse1.analyse.User;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.LinkedHashSet;
 
 import javax.swing.*;
@@ -16,12 +18,13 @@ public  class GUIThread implements Runnable {
     private Model model;
     public View view;
     private Controller controller;
+    private boolean exit = false;
 
     public GUIThread() {
 
     }
 
-    public GUIThread(int[][] networkMatrix, LinkedHashSet<User> users, LinkedHashSet<User> onlineUsers) {
+    public GUIThread(int[][] networkMatrix, LinkedHashSet<User> users, LinkedHashSet<User> onlineUsers, Client client) {
 
         if (networkMatrix == null || users == null || onlineUsers == null) {
             int[][] empty = {{}};
@@ -34,7 +37,19 @@ public  class GUIThread implements Runnable {
         this.view = new View();
         this.controller = new Controller(model, view);
         model.addObserver(this.controller);
-        view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        view.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        view.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+
+                if(client != null) {
+                    client.end();
+                    System.out.println("windowlistener if");
+                }
+                view.dispose();
+            }
+        });
         view.setTitle("WB ANALYSE 1");
         view.setBounds(500, 200, 1280, 720);
         //View.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -57,8 +72,12 @@ public  class GUIThread implements Runnable {
 
     @Override
     public void run() {
-        SwingUtilities.invokeLater(this);
+        //SwingUtilities.invokeLater(this);
+        System.out.println("run GUIThread");
     }
 }
+
+
+
 
 

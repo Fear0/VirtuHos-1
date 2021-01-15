@@ -10,6 +10,8 @@ import java.util.Random;
 
 public class Client implements Runnable{
 
+    private volatile boolean exit = false;
+
     public static void waiting(int time) {
         Random r = new Random();
         try {
@@ -32,12 +34,16 @@ public class Client implements Runnable{
         LinkedHashSet<User> onlineUsers = new LinkedHashSet<>();
         int[][] networkMatrix = new int[0][];
 
-        GUIThread guiThread = new GUIThread(networkMatrix,users,onlineUsers);
+        GUIThread guiThread = new GUIThread(networkMatrix,users,onlineUsers,this);
+        //Thread t1 = new Thread(guiThread, "AnalyseGUI");
+        //t1.setDaemon(true);
+        //t1.start();
         guiThread.run();
+
         LinkedHashSet<User> auxiliaryForUsers = users;
         LinkedHashSet<User> auxiliaryForOnlineUsers = onlineUsers;
         int[][] auxiliaryForMatrix = networkMatrix;
-        while(true){
+        while(!exit){
 
             waiting(3000);
             //Analyse.printSet(users);
@@ -70,5 +76,10 @@ public class Client implements Runnable{
             guiThread.setModel(networkMatrix, users, onlineUsers);
           //  waiting(7000000);
         }
+        System.out.println("ende while");
+    }
+
+    public void end(){
+        this.exit = true;
     }
 }

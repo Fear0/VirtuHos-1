@@ -30,7 +30,7 @@ public class CamMicValidation {
 
         //detect Webcam
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        VideoCapture capture = new VideoCapture(1);
+        VideoCapture capture = new VideoCapture(2);
         //if cam wasn't found set variable on false
         if(capture.isOpened())
             camConnected = true;
