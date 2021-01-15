@@ -3,7 +3,6 @@ package wb.analyse1.parser;
 import org.xml.sax.InputSource;
 import wb.analyse1.bbbapi.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;

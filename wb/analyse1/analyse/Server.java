@@ -2,9 +2,7 @@ package wb.analyse1.analyse;
 
 import org.xml.sax.SAXException;
 import wb.analyse1.Database.Database;
-import wb.analyse1.GUI.GUIThread;
 import wb.analyse1.bbbapi.BBBApi;
-import wb.analyse1.bbbapi.DemoEnvironment;
 import wb.analyse1.parser.ReadXMLSAXParser;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,8 +31,38 @@ public class Server {
         Database db = new Database();
         db.setAnalyse(analyse);
         ReadXMLSAXParser parser = new ReadXMLSAXParser();
+        //Database db = new Database();
+        db.setAnalyse(analyse);
+        //ReadXMLSAXParser parser = new ReadXMLSAXParser();
+       // GUIThread guiThread = new GUIThread(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
         //just for test
         db.deleteAllUsers();
+        //just for test
+        db.deleteAllInteractions();
+        analyse.setUsers(db.fetchUsers());
+        analyse.setNetworkMatrix(db.fetchNetworkMatrix());
+
+        while (true){
+            //Random r = new Random();
+            //DemoEnvironment.generateEnvironment(1, meetings.get(r.nextInt(4)));
+            //waiting(8000);
+            parser.invokeParser(bbb);
+            //ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+            analyse.updateNetworkMatrix(parser.getMeetings());
+            //ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+            analyse.degreeCentrality(true);
+            analyse.cliqueAnalysis();
+            analyse.betweennessAndCloseness();
+            analyse.eigenvectorCentrality(10);
+            analyse.printUsers();
+            db.insertInOrUpdateInteractionTable();
+            db.insertInOrUpdateUsersTable();
+            //guiThread.setModel(analyse.getNetworkMatrix(),analyse.getUsers(),analyse.getUsers());
+            //guiThread.refresh();
+            waiting(5000);
+        }
+        //just for test
+        /*db.deleteAllUsers();
         //just for test
         db.deleteAllInteractions();
         analyse.setUsers(db.fetchUsers());
@@ -132,6 +160,6 @@ public class Server {
 
 
         //db.close();
-        analyse.printUsers();
+        analyse.printUsers();*/
     }
 }

@@ -4,7 +4,6 @@ import wb.analyse1.Database.Database;
 import wb.analyse1.analyse.Analyse;
 import wb.analyse1.analyse.User;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Random;

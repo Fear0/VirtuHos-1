@@ -1,13 +1,10 @@
 package wb.analyse1.Database;
 
-import com.sun.security.jgss.GSSUtil;
 import wb.analyse1.analyse.Analyse;
 import wb.analyse1.analyse.User;
 
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 

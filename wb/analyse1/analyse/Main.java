@@ -4,14 +4,10 @@ import wb.analyse1.GUI.*;
 import org.xml.sax.SAXException;
 import wb.analyse1.Database.Database;
 import wb.analyse1.bbbapi.*;
-import wb.analyse1.parser.Attendee;
-import wb.analyse1.parser.Meeting;
 import wb.analyse1.parser.ReadXMLSAXParser;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class Main {
