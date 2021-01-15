@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Random;
 
-public class Client {
+public class Client implements Runnable{
 
     public static void waiting(int time) {
         Random r = new Random();
@@ -19,7 +19,7 @@ public class Client {
         }
     }
 
-    public static void main(String[] args){
+    public void run(){
 
         Database db = new Database();
 

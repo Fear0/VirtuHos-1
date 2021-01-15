@@ -11,6 +11,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import wb.analyse1.GUI.Client;
+
 
 import java.awt.*;
 import java.net.URI;
@@ -255,6 +257,11 @@ public class ShowController {
     //Event für die Analyse Gruppe
     public void AnalyseClicked() {
         //call function of analyse
+        Client analyseClient = new Client();
+        Thread t1 = new Thread(analyseClient, "Analyse");
+        t1.setDaemon(true);
+        t1.start();
+
     }
 
     public void onCanvasMoved(MouseEvent mouseEvent) {
