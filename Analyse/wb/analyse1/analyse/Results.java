@@ -19,4 +19,15 @@ public class Results {
                 ", betweenness=" + Arrays.toString(betweenness) +
                 '}';
     }
+
+    public void normalize_closeness(){
+        int n = closeness.length;
+        double temp = 0;
+        for(int i = 0; i<n; i++){
+            if(closeness[i]> temp) temp = closeness[i];
+        }
+        for(int i = 0; i<n; i++){
+            closeness[i] = closeness[i]/temp;
+        }
+    }
 }

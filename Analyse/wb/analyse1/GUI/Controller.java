@@ -1,5 +1,6 @@
 package wb.analyse1.GUI;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -16,7 +17,7 @@ public class Controller implements Observer {
     private View View;
     private static boolean isFirstTime = true;
     private static boolean onlineOnly = false;
-    private ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList = new ArrayList<AbstractMap.SimpleEntry<Integer, Integer>>();
+    private ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList = new ArrayList<AbstractMap.SimpleEntry<Integer, Integer>>(); //pair for positions
 
     /**
      * the Controller constructor
@@ -55,6 +56,10 @@ public class Controller implements Observer {
      * @param mode :Interaktionshaufigkeit, degree centrality , betweenness centrality
      */
     public void calculate(int mode) {
+        if (Graph.getCalc().Matrix_getter().length == 0){
+            JOptionPane.showMessageDialog(this.View, "No users. Please Wait for new users, the interface will update itself automatically.");
+            return;
+        }
         if (Graph.getCalc().Matrix_getter()[0].length == 0) {
             JOptionPane.showMessageDialog(this.View, "No users on Server. Please Wait for new users, the interface will update itself automatically.");
             return;
@@ -73,41 +78,82 @@ public class Controller implements Observer {
             GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList);
             if (onlineOnly) {
                 gr.setSwitchOnline(true);
-            }
 
-            View.setGraphicsPainter(gr);
+            }
+                View.setGraphicsPainter(gr);
             /*for (int i = 0; i < Graph.getCalc().arrNodeWeight.length; i++) {
                 System.out.println(Graph.getCalc().arrNodeWeight[i]);
             }*/
-        }
-        if (mode == 0) {
-            View.getGraphicsPainter().calc.calculateInteraction();
-            View.getGraphicsPainter().strategy = 0;
-        }
-        if (mode == 1) {
-            View.getGraphicsPainter().calc.calculateDegree();
-            View.getGraphicsPainter().strategy = 1;
-        }
-        if (mode == 2) {
-            View.getGraphicsPainter().calc.calculateBetweeniss();
-            View.getGraphicsPainter().strategy = 2;
-        }
-        if (mode == 3) {
-            View.getGraphicsPainter().calc.calculateEigenVektor();
-            View.getGraphicsPainter().strategy = 3;
-        }
-        if (mode == 4) {
-            View.getGraphicsPainter().calc.calculateCloseness();
-            for (int i = 0; i < Graph.getCalc().arrNodeWeight.length; i++) {
-                //System.out.println(Graph.getCalc().arrNodeWeight[i]);
-            }
-            View.getGraphicsPainter().strategy = 4;
-        }
-        if (mode == 5) {
-            View.getGraphicsPainter().calc.calculateClique();
-            View.getGraphicsPainter().strategy = 5;
-        }
 
+        }
+            if (mode == 0) {
+                View.getGraphicsPainter().calc.calculateInteraction();
+                View.getGraphicsPainter().strategy = 0;
+            }
+            if (mode == 1) {
+                View.getGraphicsPainter().calc.calculateDegree();
+                View.getGraphicsPainter().strategy = 1;
+            }
+            if (mode == 2) {
+                View.getGraphicsPainter().calc.calculateBetweeniss();
+                View.getGraphicsPainter().strategy = 2;
+            }
+            if (mode == 3) {
+                View.getGraphicsPainter().calc.calculateEigenVektor();
+                View.getGraphicsPainter().strategy = 3;
+            }
+            if (mode == 4) {
+                View.getGraphicsPainter().calc.calculateCloseness();
+                for (int i = 0; i < Graph.getCalc().arrNodeWeight.length; i++) {
+                    //System.out.println(Graph.getCalc().arrNodeWeight[i]);
+                }
+                View.getGraphicsPainter().strategy = 4;
+            }
+            if (mode == 5) {
+                View.getGraphicsPainter().calc.calculateClique();
+                View.getGraphicsPainter().strategy = 5;
+            }
+        /*} else {
+
+                for (int b = 0; b < Graph.getCalc().Size_getter(); b++) {
+                    arrayList.add(new AbstractMap.SimpleEntry<>(Graph.getCalc().Employee_Getter()[b].getX(), Graph.getCalc().Employee_Getter()[b].getY()));
+                }
+                GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList);
+                this.View.setGraphicsPainter(gr);
+            GraphicsPainter GP = new GraphicsPainter(Graph.getCalc());
+            this.View.setGraphicsPainter(GP);
+            if (mode == 0) {
+                View.getGraphicsPainter().calc.calculateInteraction();
+                View.getGraphicsPainter().strategy = 0;
+            }
+            if (mode == 1) {
+                View.getGraphicsPainter().calc.calculateDegree();
+                View.getGraphicsPainter().strategy = 1;
+            }
+            if (mode == 2) {
+                View.getGraphicsPainter().calc.calculateBetweeniss();
+                View.getGraphicsPainter().strategy = 2;
+            }
+            if (mode == 3) {
+                View.getGraphicsPainter().calc.calculateEigenVektor();
+                View.getGraphicsPainter().strategy = 3;
+            }
+            if (mode == 4) {
+                View.getGraphicsPainter().calc.calculateCloseness();
+                for (int i = 0; i < Graph.getCalc().arrNodeWeight.length; i++) {
+                    //System.out.println(Graph.getCalc().arrNodeWeight[i]);
+                }
+                View.getGraphicsPainter().strategy = 4;
+            }
+            if (mode == 5) {
+                View.getGraphicsPainter().calc.calculateClique();
+                View.getGraphicsPainter().strategy = 5;
+            }
+
+            /*isFirstTime = false;
+            View.revalidate();
+            View.repaint();
+        }*/
         View.getGraphicsPainter().setBounds(10, 10, 1465, 1000);
         View.add(View.getGraphicsPainter());
         View.revalidate();
@@ -277,6 +323,12 @@ public class Controller implements Observer {
             View.EigenVektor.setSelected(false);
             View.Closeness.setSelected(false);
             View.Clique.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.blue);
+            View.Degree_Centrality.setForeground(Color.BLACK);
+            View.Betweenness.setForeground(Color.BLACK);
+            View.EigenVektor.setForeground(Color.BLACK);
+            View.Clique.setForeground(Color.BLACK);
+            View.Closeness.setForeground(Color.BLACK);
             calculate(0);
         }
 
@@ -295,6 +347,12 @@ public class Controller implements Observer {
             View.EigenVektor.setSelected(false);
             View.Closeness.setSelected(false);
             View.Clique.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.BLACK);
+            View.Degree_Centrality.setForeground(Color.blue);
+            View.Betweenness.setForeground(Color.BLACK);
+            View.EigenVektor.setForeground(Color.BLACK);
+            View.Clique.setForeground(Color.BLACK);
+            View.Closeness.setForeground(Color.BLACK);
             calculate(1);
         }
 
@@ -313,6 +371,12 @@ public class Controller implements Observer {
             View.EigenVektor.setSelected(false);
             View.Closeness.setSelected(false);
             View.Clique.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.BLACK);
+            View.Degree_Centrality.setForeground(Color.BLACK);
+            View.Betweenness.setForeground(Color.blue);
+            View.EigenVektor.setForeground(Color.BLACK);
+            View.Clique.setForeground(Color.BLACK);
+            View.Closeness.setForeground(Color.BLACK);
             calculate(2);
         }
 
@@ -326,6 +390,12 @@ public class Controller implements Observer {
             View.Betweenness.setSelected(false);
             View.Closeness.setSelected(false);
             View.Clique.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.BLACK);
+            View.Degree_Centrality.setForeground(Color.BLACK);
+            View.Betweenness.setForeground(Color.BLACK);
+            View.EigenVektor.setForeground(Color.blue);
+            View.Clique.setForeground(Color.BLACK);
+            View.Closeness.setForeground(Color.BLACK);
             calculate(3);
         }
     }
@@ -338,6 +408,13 @@ public class Controller implements Observer {
             View.Betweenness.setSelected(false);
             View.EigenVektor.setSelected(false);
             View.Clique.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.BLACK);
+            View.Degree_Centrality.setForeground(Color.BLACK);
+            View.Betweenness.setForeground(Color.BLACK);
+            View.EigenVektor.setForeground(Color.BLACK);
+            View.Clique.setForeground(Color.BLACK);
+            View.Closeness.setForeground(Color.blue);
+
             calculate(4);
         }
     }
@@ -350,6 +427,12 @@ public class Controller implements Observer {
             View.Betweenness.setSelected(false);
             View.Closeness.setSelected(false);
             View.EigenVektor.setSelected(false);
+            View.Interaktionshaufigkeit.setForeground(Color.BLACK);
+            View.Degree_Centrality.setForeground(Color.BLACK);
+            View.Betweenness.setForeground(Color.BLACK);
+            View.EigenVektor.setForeground(Color.BLACK);
+            View.Clique.setForeground(Color.blue);
+            View.Closeness.setForeground(Color.BLACK);
             calculate(5);
         }
     }

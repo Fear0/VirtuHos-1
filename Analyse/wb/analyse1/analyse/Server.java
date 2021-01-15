@@ -1,0 +1,137 @@
+package wb.analyse1.analyse;
+
+import org.xml.sax.SAXException;
+import wb.analyse1.Database.Database;
+import wb.analyse1.GUI.GUIThread;
+import wb.analyse1.bbbapi.BBBApi;
+import wb.analyse1.bbbapi.DemoEnvironment;
+import wb.analyse1.parser.ReadXMLSAXParser;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.util.Random;
+
+public class Server {
+
+    public static void waiting(int time) {
+        Random r = new Random();
+        try {
+            Thread.sleep(r.nextInt(1000) + time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException {
+
+        // just for test, will be omited. Analyse loop will take place here
+        System.out.println("Analyse");
+        BBBApi bbb = new BBBApi();
+        Analyse analyse = new Analyse();
+
+
+        Database db = new Database();
+        db.setAnalyse(analyse);
+        ReadXMLSAXParser parser = new ReadXMLSAXParser();
+        //just for test
+        db.deleteAllUsers();
+        //just for test
+        db.deleteAllInteractions();
+        analyse.setUsers(db.fetchUsers());
+        analyse.setNetworkMatrix(db.fetchNetworkMatrix());
+        waiting(2000);
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_2_1);
+        waiting(8000);
+        parser.invokeParser(bbb);
+        parser.getMeetings().forEach((n) -> System.out.println(n));
+        analyse.updateNetworkMatrix(parser.getMeetings());
+        analyse.getOnlineUsers().forEach((n) -> System.out.println(n + ", "));
+        analyse.cliqueAnalysis();
+        //GUIThread guiThread = new GUIThread(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        analyse.betweennessAndCloseness();
+
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        analyse.degreeCentrality(true);
+        analyse.printUsers();
+
+
+        db.insertInOrUpdateUsersTable();
+        db.insertInOrUpdateInteractionTable();
+
+        System.out.println("Matrix in Server:");
+        analyse.printMatrix(db.fetchNetworkMatrix());
+
+        waiting(2000);
+        DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_2_2);
+        waiting(8000);
+        parser.invokeParser(bbb);
+        parser.getMeetings().forEach((n) -> System.out.println(n));
+        analyse.updateNetworkMatrix(parser.getMeetings());
+        analyse.getOnlineUsers().forEach((n) -> System.out.println(n + ", "));
+
+        analyse.cliqueAnalysis();
+
+        analyse.betweennessAndCloseness();
+
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        analyse.degreeCentrality(true);
+        analyse.printUsers();
+
+
+        db.insertInOrUpdateUsersTable();
+        db.insertInOrUpdateInteractionTable();
+
+        System.out.println("Matrix in Server:");
+        analyse.printMatrix(analyse.getNetworkMatrix());
+
+        waiting(2000);
+        DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_1_1);
+        waiting(8000);
+        parser.invokeParser(bbb);
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        analyse.updateNetworkMatrix(parser.getMeetings());
+        analyse.getOnlineUsers().forEach((n) -> System.out.println(n + ", "));
+
+        analyse.betweennessAndCloseness();
+
+        analyse.networkDensity();
+        analyse.eigenvectorCentrality(10);
+        analyse.degreeCentrality(true);
+        analyse.cliqueAnalysis();
+
+
+        db.insertInOrUpdateUsersTable();
+        db.insertInOrUpdateInteractionTable();
+
+        System.out.println("Matrix in Server:");
+        analyse.printMatrix(analyse.getNetworkMatrix());
+        // deletion is just for testing, omit this
+        //db.deleteAllUsers();
+        //db.deleteAllInteractions();
+
+        waiting(2000);
+        DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_3_1);
+        waiting(8000);
+        parser.invokeParser(bbb);
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        analyse.updateNetworkMatrix(parser.getMeetings());
+        analyse.getOnlineUsers().forEach((n) -> System.out.println(n + ", "));
+
+        analyse.betweennessAndCloseness();
+
+        analyse.networkDensity();
+        analyse.eigenvectorCentrality(10);
+        analyse.degreeCentrality(true);
+        analyse.cliqueAnalysis();
+
+        db.insertInOrUpdateUsersTable();
+        db.insertInOrUpdateInteractionTable();
+        System.out.println("Matrix in Server:");
+        analyse.printMatrix(analyse.getNetworkMatrix());
+
+
+        //db.close();
+        analyse.printUsers();
+    }
+}

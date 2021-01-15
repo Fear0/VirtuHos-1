@@ -2,6 +2,7 @@ package wb.analyse1.GUI;
 
 import wb.analyse1.analyse.User;
 
+import java.awt.*;
 import java.util.LinkedHashSet;
 
 import javax.swing.*;

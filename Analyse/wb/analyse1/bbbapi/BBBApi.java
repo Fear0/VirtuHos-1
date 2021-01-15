@@ -113,7 +113,7 @@ public class BBBApi extends BBBRequest {
      */
     private String openBrowser(String url) {
 
-        Desktop desktop = Desktop.getDesktop();
+        Desktop desktop = java.awt.Desktop.getDesktop();
         try {
             URI oURL = new URI(url);
             desktop.browse(oURL);

@@ -24,12 +24,12 @@ public class GUIUser {
 
 
  public GUIUser (User user) {
-     this.user= user;
-	 this.color=new Color(0,0,0);
-	 //this.name= name;
-	 this.x= (new Random().nextInt(1000) ) ;
-	 this.y= (new Random().nextInt(400) ) ;
-	// int k= new Random().nextInt(7);
+     this.user = user;
+     this.color = new Color(0, 0, 0);
+     //this.name= name;
+     this.x = (new Random().nextInt(1000));
+     this.y = (new Random().nextInt(400));
+     // int k= new Random().nextInt(7);
 	/* switch(k) {
 	 case 0:
 		 clique="1";
@@ -56,9 +56,10 @@ public class GUIUser {
 		 clique="1";
 		 break;
 	
-	 }*/
- }
+	 }*
 
+	 */
+ }
     public User getUser(){
         return this.user;
     }
@@ -78,6 +79,10 @@ public class GUIUser {
     public void clique_setter(String clique) {
         this.user.setCliqueIDs(clique);
     }
+
+
+
+
 
     /**
      *
@@ -118,6 +123,8 @@ public class GUIUser {
     public String CliqueGetter() {
         return this.user.getCliqueIDs();
     }
+
+    public int DegreeGetter() { return this.user.getDegree();}
 
     public Color getColor() {
         return this.color;
