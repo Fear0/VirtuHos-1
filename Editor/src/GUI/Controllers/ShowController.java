@@ -257,7 +257,7 @@ public class ShowController {
     //Event für die Analyse Gruppe
     public void AnalyseClicked() {
         //call function of analyse
-        Client analyseClient = new Client();
+        Client analyseClient = new Client(buildingName);
         Thread t1 = new Thread(analyseClient, "Analyse");
         t1.setDaemon(true);
         t1.start();

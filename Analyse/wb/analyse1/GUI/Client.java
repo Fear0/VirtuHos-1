@@ -8,9 +8,17 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Random;
 
+
+
 public class Client implements Runnable{
 
+    private String buildingName;
+
     private volatile boolean exit = false;
+
+    public Client(String buildingName){
+        this.buildingName = buildingName;
+    }
 
     public static void waiting(int time) {
         Random r = new Random();
