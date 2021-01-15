@@ -1,5 +1,7 @@
 package wb.analyse1.parser;
 
+import wb.analyse1.bbbapi.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

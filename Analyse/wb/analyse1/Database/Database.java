@@ -5,7 +5,6 @@ import wb.analyse1.analyse.User;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -75,6 +74,7 @@ public class Database {
                 String UserName = result.getString("UserName");
                 int postMatrix = result.getInt("PosMatrix");
                 int Degree = result.getInt("Degree");
+                int online = result.getInt("Online");
                 //get all atrributes
                 double Betweenness = result.getDouble("Betweenness");
                 double Closeness = result.getDouble("Closeness");
@@ -82,7 +82,7 @@ public class Database {
                 String CliqueID = result.getString("CliqueID");
 
 
-                User user = new User(UserID, UserName, postMatrix);
+                User user = new User(UserID, UserName, postMatrix, online);
                 user.setDegree(Degree);
                 user.setBetweenness(Betweenness);
                 user.setCloseness(Closeness);
@@ -104,6 +104,131 @@ public class Database {
         return userSet;
     }
 
+    public LinkedHashSet<User> fetchOnlineUsers(){
+
+        LinkedHashSet<User> userSet = new LinkedHashSet<>();
+        String sqlOnlineUsers = "Select * FROM A1_User WHERE Online = 1";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet result = stmt.executeQuery(sqlOnlineUsers);
+            if (!result.isBeforeFirst() && result.getRow() == 0) { // checken ob zeilen gibt, weil if (!result.next())
+                return userSet;
+            }
+
+            while (result.next()) {
+                String UserID = result.getString("UserID");
+                String UserName = result.getString("UserName");
+                int postMatrix = result.getInt("PosMatrix");
+                int Degree = result.getInt("Degree");
+                int online = result.getInt("Online");
+                //get all atrributes
+                double Betweenness = result.getDouble("Betweenness");
+                double Closeness = result.getDouble("Closeness");
+                double Eigenvector = result.getDouble("Eigenvector");
+                String CliqueID = result.getString("CliqueID");
+
+
+                User user = new User(UserID, UserName, postMatrix, online);
+                user.setDegree(Degree);
+                user.setBetweenness(Betweenness);
+                user.setCloseness(Closeness);
+                user.setEigenvector(Eigenvector);
+                user.setCliqueIDs(CliqueID);
+                //get all atrributes
+
+               /* System.out.print(result.getString("UserID")+",");
+                System.out.print(result.getString("UserName")+",");
+                System.out.print(result.getInt("Degree")+",");
+                System.out.print();*/
+                userSet.add(user);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return userSet;
+    }
+
+    /**
+     *  find the position in the matrix of the user with the given ID
+     * @param users
+     * @param ID
+     * @return
+     */
+    public static int getIndexforID(LinkedHashSet<User> users, String ID) {
+        for (User user : users) {
+            if (user.getId().equals(ID)) {
+                return user.getPositionMatrix();
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * get Data from A1_Interaction table and build network matrix.
+     * This is the initial network matrix of the analysis object  at each start of the application.
+     * Null if database is empty.
+     *
+     * @return matrix
+     */
+    public int[][] fetchNetworkMatrix(LinkedHashSet<User> users) {
+        /* TODO:
+         *   */
+
+        int[][] matrix = new int[0][];
+        List<String> interactions = new ArrayList<>();
+        String sqlInteraction = "Select * FROM A1_Interaction";
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet result = stmt.executeQuery(sqlInteraction);
+
+            ArrayList<String> ids = new ArrayList<>();
+            if (!result.isBeforeFirst() && result.getRow() == 0) { //
+                return new int[0][];
+            }
+            //System.out.println("new results:");
+            while (result.next()) {
+                //System.out.println("results:");
+                //System.out.println(result.getString("UserID1"));
+                //System.out.println(result.getString("UserID2"));
+                String UserID1 = result.getString("UserID1");
+                String UserID2 = result.getString("UserID2");
+                int interaction = result.getInt(("Interaction"));
+                int index1 = getIndexforID(users,UserID1);
+                int index2 = getIndexforID(users,UserID2);
+                interactions.add(index1 + "," + index2 + "," + interaction);
+                if (!ids.contains(UserID1)) {
+                    ids.add(UserID1);
+                }
+                if (!ids.contains(UserID2)) {
+                    ids.add(UserID2);
+                }
+            }
+            int n = ids.size();
+            //System.out.println(n);
+            matrix = new int[n][n];
+            for (String interaction : interactions) {
+                try {
+                    String[] parts = interaction.split(",");
+                    /*System.out.println("\t" + matrix.length + " " + matrix[0].length);
+                    System.out.println("\t" + parts.length);
+                    System.out.println(Arrays.toString(parts));*/
+                    matrix[Integer.parseInt(parts[0])][Integer.parseInt(parts[1])] = Integer.parseInt(parts[2]);
+                    matrix[Integer.parseInt(parts[1])][Integer.parseInt(parts[0])] = Integer.parseInt(parts[2]);
+                } catch (Exception e) {
+                    System.out.println("Refetching...");
+                    e.printStackTrace();
+                   // return fetchNetworkMatrix(users);
+                }
+            }
+            //System.out.println(Arrays.deepToString(matrix).replaceAll("],", "]," + System.getProperty("line.separator")));
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return matrix;
+    }
+
+
     /**
      * get Data from A1_Interaction table and build network matrix.
      * This is the initial network matrix of the analysis object  at each start of the application.
@@ -124,7 +249,7 @@ public class Database {
 
             ArrayList<String> ids = new ArrayList<>();
             if (!result.isBeforeFirst() && result.getRow() == 0) { //
-                return null;
+                return new int[0][];
             }
             System.out.println("new results:");
             while (result.next()) {
@@ -148,12 +273,17 @@ public class Database {
             System.out.println(n);
             matrix = new int[n][n];
             for (String interaction : interactions) {
-                String[] parts = interaction.split(",");
-                System.out.println("\t" + matrix.length + " " + matrix[0].length);
-                System.out.println("\t" + parts.length);
-                System.out.println(Arrays.toString(parts));
-                matrix[Integer.parseInt(parts[0])][Integer.parseInt(parts[1])] = Integer.parseInt(parts[2]);
-                matrix[Integer.parseInt(parts[1])][Integer.parseInt(parts[0])] = Integer.parseInt(parts[2]);
+                try {
+                    String[] parts = interaction.split(",");
+                    /*System.out.println("\t" + matrix.length + " " + matrix[0].length);
+                    System.out.println("\t" + parts.length);
+                    System.out.println(Arrays.toString(parts));*/
+                    matrix[Integer.parseInt(parts[0])][Integer.parseInt(parts[1])] = Integer.parseInt(parts[2]);
+                    matrix[Integer.parseInt(parts[1])][Integer.parseInt(parts[0])] = Integer.parseInt(parts[2]);
+                } catch (Exception e) {
+                    System.out.println("Refetching...");
+                    return fetchNetworkMatrix();
+                }
             }
             //System.out.println(Arrays.deepToString(matrix).replaceAll("],", "]," + System.getProperty("line.separator")));
         } catch (SQLException throwables) {
@@ -199,15 +329,21 @@ public class Database {
                         updateInteraction.setInt(1, networkMatrix[i][j]);
                         updateInteraction.setString(2, idUser1);
                         updateInteraction.setString(3, idUser2);
-                        updateInteraction.executeUpdate();
+                        updateInteraction.addBatch();
                     } else {
                         insertInteraction.setString(1, idUser1);
                         insertInteraction.setString(2, idUser2);
                         insertInteraction.setInt(3, networkMatrix[i][j]);
-                        insertInteraction.executeUpdate();
+                        insertInteraction.addBatch();
                     }
 
                 }
+            }
+            try {
+                updateInteraction.executeBatch();
+                insertInteraction.executeBatch();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -228,8 +364,8 @@ public class Database {
         try {
 
             String selectString = "SELECT * from A1_User WHERE UserID=?";
-            String insertString = "INSERT INTO A1_User (UserID,UserName,Degree,Betweenness,Closeness,Eigenvector,CliqueID,PosMatrix) values (?,?,?,?,?,?,?,?)";
-            String updateString = "UPDATE A1_User SET UserID = ?, UserName = ?, Degree = ?, Betweenness = ?, Closeness = ?, Eigenvector = ?, CliqueID = ?, PosMatrix = ? WHERE UserID = ?";
+            String insertString = "INSERT INTO A1_User (UserID,UserName,Degree,Betweenness,Closeness,Eigenvector,CliqueID,PosMatrix,Online) values (?,?,?,?,?,?,?,?,?)";
+            String updateString = "UPDATE A1_User SET UserID = ?, UserName = ?, Degree = ?, Betweenness = ?, Closeness = ?, Eigenvector = ?, CliqueID = ?, PosMatrix = ?, Online = ? WHERE UserID = ?";
             PreparedStatement updateUser = conn.prepareStatement(updateString);
             PreparedStatement insertUser = conn.prepareStatement(insertString);
             PreparedStatement selectUser = conn.prepareStatement(selectString);
@@ -253,8 +389,9 @@ public class Database {
                     updateUser.setDouble(6, user.getEigenvector());
                     updateUser.setString(7, user.getCliqueIDs());
                     updateUser.setInt(8, user.getPositionMatrix());
-                    updateUser.setString(9, user.getId());
-                    updateUser.executeUpdate();
+                    updateUser.setInt(9, user.getOnline());
+                    updateUser.setString(10,user.getId());
+                    updateUser.addBatch();
                 } else {
                     insertUser.setString(1, user.getId());
                     insertUser.setString(2, user.getName());
@@ -264,10 +401,16 @@ public class Database {
                     insertUser.setDouble(6, user.getEigenvector());
                     insertUser.setString(7, user.getCliqueIDs());
                     insertUser.setInt(8, user.getPositionMatrix());
-                    insertUser.executeUpdate();
+                    insertUser.setInt(9, user.getOnline());
+                    insertUser.addBatch();
                 }
             }
-
+            try {
+                updateUser.executeBatch();
+                insertUser.executeBatch();
+            } catch (BatchUpdateException e) {
+                System.out.println(e);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

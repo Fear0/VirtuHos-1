@@ -13,7 +13,7 @@ public class Dijkstra {
             results = dijkstra(adjacencyMatrix, i, results);
         }
         results.betweenness = normalizeBetweeness(results.betweenness, n);
-
+        results.normalize_closeness();
         return results;
     }
 
@@ -96,10 +96,15 @@ public class Dijkstra {
         double sumLength = 0;
         for(int i = 0; i < n; i++){
             if(i != source){
+                int count = 0;
                 sumLength += shortestDistances[i];
                 //System.out.print(source + "to" + i + "\t" + String.format("%.3f", shortestDistances[i]) + "\t");
                 for(int k = 0; k < n;k++) {
-                    rec_callpath(i, parents, results.betweenness, source, false, k);
+                    count = countpaths(i, parents, source, false, k, count);
+                }
+                //System.out.println(count);
+                for(int k = 0; k < n;k++) {
+                    rec_callpath(i, parents, results.betweenness, source, false, k, count);
                 }
                 //System.out.println();
             }
@@ -108,12 +113,24 @@ public class Dijkstra {
         return results;
     }
 
-    //recursive function to process all parents and calculate betweenness
-    private static void rec_callpath(int current, int[][] parents, double[] betweenness,int source, boolean between, int pathNum){
+    //function to determine number of shortest paths
+    private static int countpaths(int current, int[][] parents, int source, boolean between, int pathNum, int count){
         if(current != -1 && parents[current][pathNum] != -2){
-            if(current!= source && between)betweenness[current]++;
+            if(!between)count++;
             for(int i = 0; parents[current][i] != -2; i++) {
-                rec_callpath(parents[current][i], parents, betweenness, source, true, pathNum);
+                count = countpaths(parents[current][i], parents, source, true, pathNum, count);
+            }
+        }
+        return count;
+    }
+
+
+    //recursive function to process all parents and calculate betweenness
+    private static void rec_callpath(int current, int[][] parents, double[] betweenness,int source, boolean between, int pathNum, int pathcount){
+        if(current != -1 && parents[current][pathNum] != -2){
+            if(current!= source && between) betweenness[current] =betweenness[current] + 1.0/pathcount;
+            for(int i = 0; parents[current][i] != -2; i++) {
+                rec_callpath(parents[current][i], parents, betweenness, source, true, pathNum, pathcount);
             }
             //System.out.print(current + " ");
         }
@@ -161,3 +178,4 @@ public class Dijkstra {
         }
     }
 }
+

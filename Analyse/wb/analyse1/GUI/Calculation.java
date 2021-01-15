@@ -1,9 +1,9 @@
 package wb.analyse1.GUI;
 
+import wb.analyse1.analyse.Analyse;
 import wb.analyse1.analyse.User;
 
-import java.util.LinkedHashSet;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Create a Matrix containing User names , matrix size and the weight of every Edge between Users (will be representedt in knote)
@@ -17,7 +17,6 @@ public class Calculation {
     private GUIUser[] onlineUsers;
     public double[] arrNodeWeight;
     public int[][] arrEdgeWeight;
-
 
 
     public void setEmployee(GUIUser[] employee) {
@@ -58,14 +57,30 @@ public class Calculation {
         arrEdgeWeight = networkMatrix;
         this.Employee = new GUIUser[networkMatrix.length];
         int i = 0;
-        for (User guiuser : users){
-            this.Employee[i] = new GUIUser( guiuser);
-           // System.out.println(Employee[i]);
+        System.out.println("Marker:");
+        Analyse.printMatrix(networkMatrix);
+        Analyse.printSet(users);
+        for (User guiuser : users) {
+            this.Employee[i] = new GUIUser(guiuser);
+            // System.out.println(Employee[i]);
             i++;
         }
+        Arrays.sort(Employee, new Comparator<GUIUser>() {
+
+            @Override
+            public int compare(GUIUser o1, GUIUser o2) {
+                if (o1.getUser().getPositionMatrix() < o2.getUser().getPositionMatrix()) {
+                    return -1;
+                } else if (o1.getUser().getPositionMatrix() > o2.getUser().getPositionMatrix()) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
         i = 0;
         this.onlineUsers = new GUIUser[onlineUsers.size()];
-        for (User user : onlineUsers){
+        for (User user : onlineUsers) {
             this.onlineUsers[i] = new GUIUser(user);
             i++;
         }
@@ -73,7 +88,7 @@ public class Calculation {
 
     }
 
-    public GUIUser[] getOnlineUsers(){
+    public GUIUser[] getOnlineUsers() {
         return onlineUsers;
     }
 
@@ -105,7 +120,7 @@ public class Calculation {
         int degree = 0;
         for (int i = 0; i < Matrix_size; i++) {
             for (int j = 0; j < Matrix_size; j++) {
-                degree = degree + this.networkMatrix[j][i];
+                degree = this.Employee[i].DegreeGetter();
             }
             //System.out.println(degree);
             arrNodeWeight[i] = degree;

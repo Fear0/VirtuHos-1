@@ -12,7 +12,7 @@ import java.util.*;
 public class Analyse {
 
     private int[][] networkMatrix = null;
-    private LinkedHashSet<User> users;
+    private LinkedHashSet<wb.analyse1.analyse.User> users;
     private LinkedHashSet<User> onlineUsers;
     private boolean matrixChanged = false;
 
@@ -55,7 +55,7 @@ public class Analyse {
                 for (Attendee attendee : attendees) {
                     if (!ids.contains(attendee.getId())) {
                         ids.add(attendee.getId());
-                        User user = new User(attendee.getId(),attendee.getName(), index);
+                        User user = new User(attendee.getId(),attendee.getName(), index, 1);
                         userSet.add(user);
                         index++;
                     }
@@ -104,6 +104,9 @@ public class Analyse {
             this.onlineUsers = new LinkedHashSet<>();
             /*this.onlineUsers.forEach(x -> System.out.println(x));
             this.users.forEach(x -> System.out.println(x));*/
+            for (User user : this.users){
+                user.setOnline(0);
+            }
             List<String> ids = new ArrayList<String>();
             for (User user : this.users) {
                 ids.add(user.getId());
@@ -131,13 +134,14 @@ public class Analyse {
                     if (!ids.contains(attendee.getId())) {
                         ids.add(attendee.getId());
                         newUsers++;
-                        User newUser = new User(attendee.getId(),attendee.getName(), oldUsers - 1 + newUsers);
+                        User newUser = new User(attendee.getId(),attendee.getName(), oldUsers - 1 + newUsers,1);
                         this.users.add(newUser);
                     }
                 }
                 for (Attendee attendee : attendees){
                     for (User user : this.users){
                         if (user.getId().equals(attendee.getId())){
+                            user.setOnline(1);
                             this.onlineUsers.add(user);
                         }
                     }
@@ -504,7 +508,10 @@ public class Analyse {
         cliques with the largest size. Then we store the users (vertice) that make those cliques (through their position in matrix)*/
 
         //Set<List<User>> usersInMaxCliques = new LinkedHashSet<>();
-        AbstractMap.SimpleEntry<Integer, List<List<Integer>>> maxClique = allCliques.get(allCliques.size() - 1);
+        AbstractMap.SimpleEntry<Integer, List<List<Integer>>> maxClique = null;
+        if (allCliques != null) {
+            maxClique = allCliques.get(allCliques.size() - 1);
+        }
         return maxClique;
     }
 
@@ -518,6 +525,9 @@ public class Analyse {
 
         Set<List<User>> usersInMaxCliques = new LinkedHashSet<>();
         AbstractMap.SimpleEntry<Integer, List<List<Integer>>> maxClique = calculateCliques(this.networkMatrix);
+        if (maxClique == null){
+            return null;
+        }
         System.out.printf("Largest Cliques have size %d. Each clique has following users:  \n", maxClique.getValue().get(0).size());
         int j = 1;
         for (List<Integer> indexes : maxClique.getValue()) {
@@ -589,10 +599,16 @@ public class Analyse {
 
             if (weighted) {
                 for (int col = 0; col < size; col++) {
+                    if (col == row) {
+                        continue;
+                    }
                     degree += this.networkMatrix[row][col];
                 }
             } else {
                 for (int col = 0; col < size; col++) {
+                    if (col == row) {
+                        continue;
+                    }
                     if (this.networkMatrix[row][col] != 0) {
                         ++degree;
                     }
@@ -636,6 +652,18 @@ public class Analyse {
     public void printMatrix() {
         if (this.networkMatrix != null) {
             System.out.println(Arrays.deepToString(this.networkMatrix).replaceAll("],", "]," + System.getProperty("line.separator")));
+        }
+    }
+
+    public static <T> void printSet(LinkedHashSet<T> set){
+        if (set != null) {
+            System.out.println(Arrays.deepToString(set.toArray())
+                    .replaceAll(",", System.getProperty("line.separator")));
+        }
+    }
+    public static void printMatrix(int[][] matrix){
+        if (matrix != null) {
+            System.out.println(Arrays.deepToString(matrix).replaceAll("],", "]," + System.getProperty("line.separator")));
         }
     }
 

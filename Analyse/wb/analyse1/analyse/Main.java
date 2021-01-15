@@ -24,7 +24,7 @@ public class Main {
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException {
 
         // just for test, will be omited. Analyse loop will take place here
-        System.out.println("wb/analyse1");
+        System.out.println("Analyse");
         BBBApi bbb = new BBBApi();
         Analyse analyse = new Analyse();
         /*int[][] matrix = {{0, 2, 1, 1, 1, 0, 0, 1},
@@ -50,32 +50,38 @@ public class Main {
         analyse.setNetworkMatrix(db.fetchNetworkMatrix());
 
 
-        /*try this loop
-        ArrayList<ArrayList<String>> meetings = new ArrayList<ArrayList<String>>();
+        //try this loop
+       /* ArrayList<ArrayList<String>> meetings = new ArrayList<ArrayList<String>>();
         meetings.add(DemoEnvironment.userTest_1_1);
         meetings.add(DemoEnvironment.userTest_1_2);
         meetings.add(DemoEnvironment.userTest_2_1);
         meetings.add(DemoEnvironment.userTest_2_2);
-
+        DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_2_1);
+        //ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        waiting(8000);
         while (true){
             Random r = new Random();
-            DemoEnvironment.generateEnvironment(1, meetings.get(r.nextInt(4)));
-            waiting(8000);
+            //DemoEnvironment.generateEnvironment(1, meetings.get(r.nextInt(4)));
+            //waiting(8000);
             parser.invokeParser(bbb);
-            ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+            //ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
             analyse.updateNetworkMatrix(parser.getMeetings());
             //ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
             analyse.degreeCentrality(true);
+            analyse.cliqueAnalysis();
+            analyse.betweennessAndCloseness();
+            analyse.eigenvectorCentrality(10);
             analyse.printUsers();
             db.insertInOrUpdateInteractionTable();
             db.insertInOrUpdateUsersTable();
-            guiThread.setModel(analyse.getNetworkMatrix(),analyse.getUsers());
+            guiThread.setModel(analyse.getNetworkMatrix(),analyse.getUsers(),analyse.getUsers());
             //guiThread.refresh();
-            waiting(60000);
+            waiting(5000);
         }*/
 
 
         //ReadXMLSAXParser parser = new ReadXMLSAXParser();
+        ReadXMLSAXParser.endAllMeetings(bbb, "1", ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
         DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_2_1);
         waiting(8000);
         parser.invokeParser(bbb);

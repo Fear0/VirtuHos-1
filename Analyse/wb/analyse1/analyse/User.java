@@ -9,6 +9,7 @@ public class User extends Attendee {
     private double Eigenvector;
     private String CliqueIDs = "";
     private int positionMatrix;
+    private int online;
 
     public User(){
         super();
@@ -21,12 +22,21 @@ public class User extends Attendee {
         this.Closeness = 0;
         this.positionMatrix = positionMatrix;
     }
-    public User(String ID, String name, int positionMatrix) {
+    public User(String ID, String name, int positionMatrix, int online) {
         super(ID,name);
         this.Degree = 0;
         this.Betweenness = 0;
         this.Closeness = 0;
         this.positionMatrix = positionMatrix;
+        this.online = online;
+    }
+
+    public void setOnline(int online) {
+        this.online = online;
+    }
+
+    public int getOnline() {
+        return online;
     }
 
     public String getCliqueIDs(){
@@ -68,9 +78,7 @@ public class User extends Attendee {
     public void setDegree(int degree) {
         Degree = degree;
     }
-    public void setCloseness(int closeness) {
-        closeness = closeness;
-    }
+
 
 
     @Override

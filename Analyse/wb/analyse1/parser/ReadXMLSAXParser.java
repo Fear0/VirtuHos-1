@@ -92,6 +92,9 @@ public class ReadXMLSAXParser {
      * @return IDS of the meetings in the parameter
      */
     public static String[] getMeetingIDS(List<Meeting> meetings) {
+        if (meetings == null){
+            return null;
+        }
         String[] res = new String[meetings.size()];
         for (int i = 0; i < meetings.size(); i++) {
             res[i] = meetings.get(i).getMeetingID();
@@ -108,6 +111,9 @@ public class ReadXMLSAXParser {
      */
     public static void endAllMeetings(BBBApi bbb, String password, String[] MeetingsIDs) {
         // for testing purposes
+        if (MeetingsIDs == null){
+            return;
+        }
         for (String meetingID : MeetingsIDs) {
             bbb.endMeeting(meetingID, password);
         }
