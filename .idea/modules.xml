@@ -5,7 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/Editor/Editor.iml" filepath="$PROJECT_DIR$/Editor/Editor.iml" />
       <module fileurl="file://$PROJECT_DIR$/Halle/H1/H1.iml" filepath="$PROJECT_DIR$/Halle/H1/H1.iml" />
       <module fileurl="file://$PROJECT_DIR$/Halle/Server/Server.iml" filepath="$PROJECT_DIR$/Halle/Server/Server.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/Virtuhos-WB1.iml" filepath="$PROJECT_DIR$/.idea/Virtuhos-WB1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wb/analyse1/analyse1.iml" filepath="$PROJECT_DIR$/wb/analyse1/analyse1.iml" />
       <module fileurl="file://$PROJECT_DIR$/interaktionen-1/interaktionen-1.iml" filepath="$PROJECT_DIR$/interaktionen-1/interaktionen-1.iml" />
     </modules>
   </component>
