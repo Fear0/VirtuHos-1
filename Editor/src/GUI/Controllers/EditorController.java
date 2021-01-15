@@ -95,8 +95,7 @@ public class EditorController {
             }
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK && !buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM)){
-                building.setGridState(false);
-                DatabaseCommunication.saveDialog(building);
+
             } else if(buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM) && result.get() == ButtonType.OK) {
                 for(Room room : building.getRooms()){
                     if(room.getType() == RoomType.NONE){
