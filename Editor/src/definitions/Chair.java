@@ -40,7 +40,7 @@ public class Chair extends EditorObject {
     }
 
     //passt chairs an das Grid an.s
-    public void toGridCoordinates(double s) {
+    public void toGridCoordinatesOld(double s) {
         double oldX = this.getCoordinateX();
         double oldY = this.getCoordinateY();
         double diffX = oldX % s;
@@ -51,6 +51,36 @@ public class Chair extends EditorObject {
         this.setHeight(s);
     }
 
+    public void toGridCoordinates(double s) {
+        double oldX = this.getCoordinateX();
+        double oldY = this.getCoordinateY();
+        double diffX = oldX % s;
+        double diffY = oldY % s;
+        if (diffX < s/2) {
+            this.setCoordinateX(oldX-diffX);
+        } else if (diffX >= s/2) {
+            this.setCoordinateX(oldX+(s-diffX));
+        }
+        if (diffY < s/2) {
+            this.setCoordinateY(oldY-diffY);
+        } else if (diffY >= s/2) {
+            this.setCoordinateY(oldY+(s-diffY));
+        }
+        double oldHeight = this.getHeight();
+        double oldWidth = this.getWidth();
+        double diffHeight = oldHeight % s;
+        double diffWidth =  oldWidth % s;
+        if (diffHeight < s/2) {
+            this.setHeight(oldHeight - diffHeight);
+        } else if (diffHeight >= s/2) {
+            this.setHeight(oldHeight+(s-diffHeight));
+        }
+        if (diffWidth < s/2) {
+            this.setWidth(oldWidth - diffWidth);
+        } else if(diffWidth >= s/2) {
+            this.setWidth(oldWidth+(s-diffWidth));
+        }
+    }
     public boolean isFree(double roomX, double roomY, String buildingName) {
         List<Person> persons = DatabaseCommunication.getPersons(buildingName);
         double x = this.getCoordinateX() + roomX;

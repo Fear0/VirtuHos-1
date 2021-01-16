@@ -24,7 +24,7 @@ public class Text {
     public static final String BUILDING_MULTIPLE_HALLS = "Es gibt mehr als eine Halle.";
     public static final String BUILDING_ROOMS_DO_NOT_TOUCH = "Einige Räume berühren sich nicht.";
     public static final String BUILDING_LEGAL = "legal";
-    public static final String BUILDING_HAS_ROOMTYPELESS_ROOM = "Es gibt einen oder mehrere Räume die keiner Raumart angehören.";
+    public static final String BUILDING_HAS_ROOM_WITHOUT_TYPE = "Es gibt einen oder mehrere Räume die keiner Raumart angehören.";
 
     public static final String DATABASE_CONNECTION_NO_CONNECTION = "Es konnte keine Verbindung zur Datenbank hergestellt werden.";
     public static final String DATABASE_CONNECTION_NAME_DIALOG = "Unter welchem Namen soll das Gebäude gespeichert werden?";
@@ -37,7 +37,7 @@ public class Text {
     public static final String DATABASE_CONNECTION_NO_BUILDINGS = "Es gibt keine Gebäude.";
 
 
-    public static final String EDITOR_CONTROLLER_ROOMTYPE_ERROR_DIALOG = "%s Alle betroffenen Räume werden in Büros geändert.";
+    public static final String EDITOR_CONTROLLER_ROOM_TYPE_ERROR_DIALOG = "%s Alle betroffenen Räume werden in Büros geändert.";
     public static final String EDITOR_CONTROLLER_LEAVE_DIALOG = "Wollen Sie den Editor wirklich verlassen?";
     public static final String EDITOR_CONTROLLER_SAVE_WARNING = "%s Wollen Sie das Gebäude wirklich speichern?";
     public static final String EDITOR_CONTROLLER_CHAIRS_IN_HALL = "In einer Halle dürfen keine Stühle platziert werden!";

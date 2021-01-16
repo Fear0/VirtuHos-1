@@ -213,7 +213,7 @@ public class Building implements java.io.Serializable {
         int hallCount = 0;
         for (Room room : this.rooms) {
             if(room.getType() == RoomType.NONE){
-                return Text.BUILDING_HAS_ROOMTYPELESS_ROOM;
+                return Text.BUILDING_HAS_ROOM_WITHOUT_TYPE;
             }
             if (room.getType() == RoomType.HALL) {
                 hallCount++;
@@ -285,5 +285,10 @@ public class Building implements java.io.Serializable {
             }
         }
         return output;
+    }
+    public void clearScreen(Canvas can){
+        if(can == null) return;
+        GraphicsContext gc = can.getGraphicsContext2D();
+        gc.clearRect(0,0,can.getWidth(),can.getHeight());
     }
 }

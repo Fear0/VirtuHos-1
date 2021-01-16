@@ -81,7 +81,7 @@ public class Room extends EditorObject {
         switch (roomtype) {
             case OFFICE -> gc.setFill(Color.rgb(238, 232, 170, 0.7));
             case MEETING_ROOM -> gc.setFill(Color.rgb(188, 143, 143, 0.7));
-            case HALL -> gc.setFill(Color.rgb(148, 0, 211, 0.7));
+            case HALL -> gc.setFill(Color.rgb(210, 140, 211, 0.7));
             default -> gc.setFill(Color.rgb(200,200,200,0.7));
         }
         gc.strokeRect(x, y, w, h);

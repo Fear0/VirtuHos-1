@@ -25,9 +25,10 @@ public final class DatabaseCommunication {
     private static final String LOAD_BUILDING = "SELECT Building, Author, Date FROM E1_Buildings WHERE Name = ?";
     private static final String DELETE_BUILDING = "DELETE FROM E1_Buildings WHERE Name = ?";
 
-    private static final String UPDATE_PERSON = "INSERT INTO E1_Persons(Name, Building, X, Y) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE Building = ?, X = ?, Y = ?";
-    private static final String DELETE_PERSON = "DELETE FROM E1_Persons WHERE Name = ?";
-    private static final String GET_PERSONS = "SELECT Name, X, Y FROM E1_Persons WHERE Building = ?";
+    private static final String UPDATE_PERSON = "INSERT INTO E1_Persons(ID, Name, Building, X, Y) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE Name = ?, Building = ?, X = ?, Y = ?";
+    private static final String DELETE_PERSON = "DELETE FROM E1_Persons WHERE ID = ?";
+    private static final String GET_PERSONS = "SELECT ID, Name, X, Y FROM E1_Persons WHERE Building = ?";
+    private static final String GET_PERSON = "SELECT ID, Name, X, Y FROM E1_Persons WHERE ID = ? AND Building = ?";
     private static final String DELETE_PERSONS = "DELETE FROM E1_Persons WHERE Building = ?";
 
     private static final String LOCK_ROOM = "INSERT INTO E1_Locks(Building, Room) VALUES (?, ?) ON DUPLICATE KEY UPDATE Building = Building";
@@ -40,6 +41,7 @@ public final class DatabaseCommunication {
     private static final String COLUMN_BUILDING = "Building";
     private static final String COLUMN_AUTHOR = "Author";
     private static final String COLUMN_DATE = "Date";
+    private static final String COLUMN_ID = "ID";
     private static final String COLUMN_X = "X";
     private static final String COLUMN_Y = "Y";
     private static final String COLUMN_ROOM = "Room";
@@ -195,22 +197,24 @@ public final class DatabaseCommunication {
 
     public static void updatePerson(Person person, String buildingName) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PERSON)) {
-            preparedStatement.setString(1, person.getName());
-            preparedStatement.setString(2, buildingName);
-            preparedStatement.setDouble(3, person.getX());
-            preparedStatement.setDouble(4, person.getY());
-            preparedStatement.setString(5, buildingName);
-            preparedStatement.setDouble(6, person.getX());
-            preparedStatement.setDouble(7, person.getY());
+            preparedStatement.setString(1, person.getId());
+            preparedStatement.setString(2, person.getName());
+            preparedStatement.setString(3, buildingName);
+            preparedStatement.setDouble(4, person.getX());
+            preparedStatement.setDouble(5, person.getY());
+            preparedStatement.setString(6, person.getName());
+            preparedStatement.setString(7, buildingName);
+            preparedStatement.setDouble(8, person.getX());
+            preparedStatement.setDouble(9, person.getY());
             preparedStatement.executeUpdate();
         } catch (Exception e) {
             System.err.println("updatePerson Error");
         }
     }
 
-    public static void deletePerson(String username) {
+    public static void deletePerson(String id) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_PERSON)) {
-            preparedStatement.setString(1, username);
+            preparedStatement.setString(1, id);
             preparedStatement.executeUpdate();
         } catch (Exception e) {
             System.err.println("deletePerson Error");
@@ -223,17 +227,38 @@ public final class DatabaseCommunication {
             preparedStatement.setString(1, buildingName);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    byte[] buffer = resultSet.getBytes(COLUMN_NAME);
+                    byte[] buffer = resultSet.getBytes(COLUMN_ID);
+                    String id = new String(buffer, StandardCharsets.UTF_8);
+                    buffer = resultSet.getBytes(COLUMN_NAME);
                     String name = new String(buffer, StandardCharsets.UTF_8);
                     double x = resultSet.getDouble(COLUMN_X);
                     double y = resultSet.getDouble(COLUMN_Y);
-                    persons.add(new Person(name, x, y));
+                    persons.add(new Person(id, name, x, y));
                 }
             }
         } catch (Exception e) {
             System.err.println("getPersons Error");
         }
         return persons;
+    }
+    public static Person getPerson(String id, String buildingName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(GET_PERSON)) {
+            preparedStatement.setString(1, id);
+            preparedStatement.setString(2, buildingName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                byte[] buffer = resultSet.getBytes(COLUMN_ID);
+                String temp_id = new String(buffer, StandardCharsets.UTF_8);
+                buffer = resultSet.getBytes(COLUMN_NAME);
+                String name = new String(buffer, StandardCharsets.UTF_8);
+                double x = resultSet.getDouble(COLUMN_X);
+                double y = resultSet.getDouble(COLUMN_Y);
+                return new Person(temp_id, name, x, y);
+            }
+        } catch (Exception e) {
+            System.err.println("getPersons Error");
+        }
+        return null;
     }
     public static void lockRoom(String buildingName, String roomName) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(LOCK_ROOM)) {

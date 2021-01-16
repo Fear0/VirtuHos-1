@@ -7,18 +7,23 @@ import javafx.scene.paint.Color;
 public class Person implements java.io.Serializable {
 
     //ersetzen/erweitern durch id von interaktionen
+    private final String id;
     private final String name;
     private final double x;
     private final double y;
 
-    public Person(String name, double x, double y) {
+    public Person(String id, String name, double x, double y) {
+        this.id = id;
         this.name = name;
         this.x = x;
         this.y = y;
     }
 
+    public String getId() {
+        return id;
+    }
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public double getX() {

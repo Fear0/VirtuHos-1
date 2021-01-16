@@ -38,6 +38,7 @@ public class ShowController {
     private String ID;
 
 
+    //Setzt den Benutzernamen
     public void setUsername(String n) {
         this.username = n;
     }
@@ -45,6 +46,11 @@ public class ShowController {
     //Wechselt aus dem Anzeigemodus ins Hauptmenü
     public void onBackClicked() {
         removeUser();
+        building = new Building();
+        building.clearScreen(buildingCanvas);
+        building.clearScreen(personCanvas);
+        building.clearScreen(lockCanvas);
+        building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
         building = null;
         new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
         //stop the thread for building updates
@@ -52,6 +58,7 @@ public class ShowController {
         MainMenu.primaryStage.setScene(MainMenu.mainMenu);
     }
 
+    //Entfernt einen Nutzer aus einem Gebaüde
     public void removeUser() {
         DatabaseCommunication.deletePerson(username);
     }
@@ -62,8 +69,19 @@ public class ShowController {
 
         //get the name of the building in the database and save it in buildingname
 
-        building = DatabaseCommunication.loadDialog(IC);
+        Building loadBuilding = DatabaseCommunication.loadDialog(IC);
+        if (loadBuilding != null){
         if (building != null){
+                removeUser();
+                building = new Building();
+                building.clearScreen(buildingCanvas);
+                building.clearScreen(personCanvas);
+                building.clearScreen(lockCanvas);
+                building.redrawEverything(buildingCanvas, personCanvas, lockCanvas);
+                building = null;
+                new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
+            }
+            building = loadBuilding;
             removeUser();
             new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
             buildingName = building.getName();
@@ -90,7 +108,8 @@ public class ShowController {
                 }
             }
             if(temproom != null){
-                Person tempPerson = new Person(this.username, (temproom.getCoordinateX() + temproom.getWidth()/2 - (0.5 * building.getGridSize())),
+                String id = this.username;
+                Person tempPerson = new Person(id, this.username, (temproom.getCoordinateX() + temproom.getWidth()/2 - (0.5 * building.getGridSize())),
                         (temproom.getCoordinateY() + temproom.getHeight()/2 - (0.5 * building.getGridSize())));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                 InteraktionMovePerson(temproom, false);
@@ -107,7 +126,9 @@ public class ShowController {
                 }
             }
             if(tempRoom != null){
-                Person tempPerson = new Person(this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
+                //TODO ID durch richtige ID ersetzen
+                String ID = this.username;
+                Person tempPerson = new Person(ID,this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
                         (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
             } else { //Eure Methode
@@ -118,7 +139,9 @@ public class ShowController {
                     }
                 }
                 if(tempRoom != null){
-                    Person tempPerson = new Person(this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
+                    //TODO ID durch richtige ID ersetzen
+                    String ID = this.username;
+                    Person tempPerson = new Person(ID,this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
                             (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
                     DatabaseCommunication.updatePerson(tempPerson, buildingName);
                     InteraktionMovePerson(tempRoom, false);
@@ -141,6 +164,7 @@ public class ShowController {
         }
     }
 
+    //Wenn auf den Button Grid geklickt wird, dann wird das Grid angezeigt oder wieder ausgeblendet
     public void onGridClicked(){
         if (building != null) {
             building.setGridState(!building.getGridState());
@@ -148,8 +172,10 @@ public class ShowController {
         }
     }
 
+    //Wenn auf das Canvas geklickt wird passieren verschiedene sachen, je nachdem wohin man geklickt hat.
+    //Weiterhin wird auch das Gebäude aktualisiert
     public void onCanvasClicked(MouseEvent mouseEvent) {
-        if (building != null){
+        if (building != null) {
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
         }
@@ -169,9 +195,9 @@ public class ShowController {
 
             //check if the user clicked on a document and open it in default browser
             Table table = room.getTableAtCoordinates(mouseEvent.getX(), mouseEvent.getY());
-            if (table != null){
+            if (table != null) {
                 if (table.getDoc() != null) {
-                    if (table.hasDocAtTableCoordinates(mouseEvent.getX()- room.getCoordinateX() -table.getCoordinateX(), mouseEvent.getY()-room.getCoordinateY() -table.getCoordinateY() )) {
+                    if (table.hasDocAtTableCoordinates(mouseEvent.getX() - room.getCoordinateX() - table.getCoordinateX(), mouseEvent.getY() - room.getCoordinateY() - table.getCoordinateY())) {
                         try {
                             Desktop desktop = java.awt.Desktop.getDesktop();
                             URI oURL = new URI(table.getDoc().getLink());
@@ -188,58 +214,81 @@ public class ShowController {
                 }
             }
 
-            //check if the room you want to enter is currently locked
-            if (DatabaseCommunication.isLocked(buildingName, room.getName())) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(Text.TITLE);
-                alert.setHeaderText("");
-                alert.setContentText(Text.SHOW_CONTROLLER_ROOM_LOCKED);
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.isPresent() && result.get() != ButtonType.OK) {
-                    return;
-                }
-            }
-
             //move person
             if (room.getType() == RoomType.HALL) {
-                Person tempPerson = new Person(this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
+                //TODO ID durch richtige ID ersetzen
+                String id = this.username;
+                Person tempPerson = new Person(id, this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
                         mouseEvent.getY() - (0.5 * building.getGridSize()));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
-                //TODO hier hallen gruppenerstellung
-                InteraktionMovePerson(room, false);
                 building.redrawPersons(personCanvas);
             } else {
-                Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX() - room.getCoordinateX(),
-                        mouseEvent.getY() - room.getCoordinateY());
-                if (chair != null) {
-                    if (chair.isFree(room.getCoordinateX(), room.getCoordinateY(), buildingName)) {
-                        Person tempPerson = new Person(this.username, chair.getCoordinateX() + room.getCoordinateX(),
-                                chair.getCoordinateY() + room.getCoordinateY());
-                        DatabaseCommunication.updatePerson(tempPerson, buildingName);
-                        InteraktionMovePerson(room, false);
-                        building.redrawPersons(personCanvas);
-                    } else {
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                //schließt aus, dass man sich im eigenen Raum hin und her bewegt, da dies bei der Interaktion immer wieder neue BBB räume öffnet
+                Person person = DatabaseCommunication.getPerson(username, buildingName);
+                Room tempRoom = null;
+                if (person != null)
+                    tempRoom = building.getRoomAtCoordinates(person.getX(), person.getY());
+                if (tempRoom == null || !tempRoom.getName().equals(room.getName())) {
+                    //check if the room you want to enter is currently locked
+                    if (DatabaseCommunication.isLocked(buildingName, room.getName())) {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle(Text.TITLE);
-                        alert.setHeaderText(null);
-                        alert.setContentText(Text.SHOW_CONTROLLER_CHAIR_NOT_FREE);
-                        alert.showAndWait();
+                        alert.setHeaderText("");
+                        alert.setContentText(Text.SHOW_CONTROLLER_ROOM_LOCKED);
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.isPresent() && result.get() != ButtonType.OK) {
+                            return;
+                        }
                     }
-                } else {
-                    Chair tempChair = room.freeChair(buildingName);
-                    if (tempChair != null) {
-                        Person tempPerson = new Person(this.username,
-                                tempChair.getCoordinateX() + room.getCoordinateX(),
-                                tempChair.getCoordinateY() + room.getCoordinateY());
+
+                    //move person
+                    if (room.getType() == RoomType.HALL) {
+                        //TODO ID durch richtige ID ersetzen
+                        String ID = this.username;
+                        Person tempPerson = new Person(ID,this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
+                                mouseEvent.getY() - (0.5 * building.getGridSize()));
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                        //TODO hier hallen gruppenerstellung
                         InteraktionMovePerson(room, false);
                         building.redrawPersons(personCanvas);
                     } else {
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setTitle(Text.TITLE);
-                        alert.setHeaderText(null);
-                        alert.setContentText(Text.SHOW_CONTROLLER_NO_FREE_CHAIR);
-                        alert.showAndWait();
+                        Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX() - room.getCoordinateX(),
+                                mouseEvent.getY() - room.getCoordinateY());
+                        if (chair != null) {
+                            if (chair.isFree(room.getCoordinateX(), room.getCoordinateY(), buildingName)) {
+                                //TODO richtigen Aufruf für id benutzen
+                                String id = this.username;
+                                Person tempPerson = new Person(id, this.username, chair.getCoordinateX() + room.getCoordinateX(),
+                                        chair.getCoordinateY() + room.getCoordinateY());
+                                DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                                InteraktionMovePerson(room, false);
+                                building.redrawPersons(personCanvas);
+                            } else {
+                                Alert alert = new Alert(Alert.AlertType.WARNING);
+                                alert.setTitle(Text.TITLE);
+                                alert.setHeaderText(null);
+                                alert.setContentText(Text.SHOW_CONTROLLER_CHAIR_NOT_FREE);
+                                alert.showAndWait();
+                            }
+                        } else {
+                            Chair tempChair = room.freeChair(buildingName);
+                            if (tempChair != null) {
+                                //TODO ID durch richtige ID ersetzen
+                                String id = this.username;
+                                Person tempPerson = new Person(id, this.username,
+                                        tempChair.getCoordinateX() + room.getCoordinateX(),
+                                        tempChair.getCoordinateY() + room.getCoordinateY());
+                                DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                                InteraktionMovePerson(room, false);
+                                building.redrawPersons(personCanvas);
+                            } else {
+                                Alert alert = new Alert(Alert.AlertType.WARNING);
+                                alert.setTitle(Text.TITLE);
+                                alert.setHeaderText(null);
+                                alert.setContentText(Text.SHOW_CONTROLLER_NO_FREE_CHAIR);
+                                alert.showAndWait();
+                            }
+                        }
                     }
                 }
             }

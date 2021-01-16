@@ -1,14 +1,23 @@
 package GUI.Controllers;
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.ImageCursor;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import GUI.MainMenu;
 import definitions.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import javax.imageio.ImageIO;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -31,6 +40,8 @@ public class EditorController {
     private Chair tempChair;
     private double chairOffsetX;
     private double chairOffsetY;
+    private double ghostOffsetX;
+    private double ghostOffsetY;
     private Room tempChairRoom;
 
     private @FXML Slider GridSlider;
@@ -88,15 +99,15 @@ public class EditorController {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle(Text.TITLE);
             alert.setHeaderText("");
-            if(buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM)){
-                alert.setContentText(String.format(Text.EDITOR_CONTROLLER_ROOMTYPE_ERROR_DIALOG, buildingState));
+            if(buildingState.equals(Text.BUILDING_HAS_ROOM_WITHOUT_TYPE)){
+                alert.setContentText(String.format(Text.EDITOR_CONTROLLER_ROOM_TYPE_ERROR_DIALOG, buildingState));
             }else{
             alert.setContentText(String.format(Text.EDITOR_CONTROLLER_SAVE_WARNING, buildingState));
             }
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK && !buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM)){
+            if (result.isPresent() && result.get() == ButtonType.OK && !buildingState.equals(Text.BUILDING_HAS_ROOM_WITHOUT_TYPE)){
 
-            } else if(buildingState.equals(Text.BUILDING_HAS_ROOMTYPELESS_ROOM) && result.get() == ButtonType.OK) {
+            } else if(buildingState.equals(Text.BUILDING_HAS_ROOM_WITHOUT_TYPE) && result.get() == ButtonType.OK) {
                 for(Room room : building.getRooms()){
                     if(room.getType() == RoomType.NONE){
                         room.setType(RoomType.OFFICE);
@@ -130,6 +141,7 @@ public class EditorController {
         Building tempBuilding = DatabaseCommunication.loadDialog(IC);
         if (tempBuilding != null) building = tempBuilding;
         building.redrawBuilding(canvas);
+        selectionController.setBuilding(building);
     }
 
     //Wechselt den aktiven Modus des Editors
@@ -141,6 +153,7 @@ public class EditorController {
         } else {
             this.editorMode = editorMode;
         }
+        setCursorIcon();
     }
 
     public void onNewRoomClicked() {
@@ -212,7 +225,7 @@ public class EditorController {
                 if (room != null) {
                     if (room.getType() != RoomType.HALL) {
                         Chair chair = new Chair(mouseEvent.getX() - room.getCoordinateX(), mouseEvent.getY() - room.getCoordinateY(), building.getGridSize(), building.getGridSize());
-                        chair.toGridCoordinates(building.getGridSize());
+                        chair.toGridCoordinatesOld(building.getGridSize());
                         if (room.isLegalChair(chair)) {
                             room.getChairs().add(chair);
                             building.redrawBuilding(canvas);
@@ -269,7 +282,7 @@ public class EditorController {
             else {
                 ghostChair.setCoordinateX(mouseEvent.getX());
                 ghostChair.setCoordinateY(mouseEvent.getY());
-                ghostChair.toGridCoordinates(building.getGridSize());
+                ghostChair.toGridCoordinatesOld(building.getGridSize());
                 building.redrawBuilding(canvas);
                 ghostChair.draw(canvas);
             }
@@ -345,6 +358,9 @@ public class EditorController {
                     tempChairRoom = room;
                     chairOffsetX = mouseEvent.getX() - chair.getCoordinateX();
                     chairOffsetY = mouseEvent.getY() - chair.getCoordinateY();
+                    ghostChair = new Chair(chair.getCoordinateX(), chair.getCoordinateY(), building.getGridSize(), building.getGridSize());
+                    ghostOffsetX = chairOffsetX;
+                    ghostOffsetY = chairOffsetY;
                 }
             }
         }
@@ -578,6 +594,7 @@ public class EditorController {
 
     //Bewegt ein Stuhl in Raum
     public void moveChair(MouseEvent mouseEvent) {
+        /*
         double oldX = tempChair.getCoordinateX();
         double oldY = tempChair.getCoordinateY();
         tempChair.setCoordinateX(mouseEvent.getX() - chairOffsetX);
@@ -585,6 +602,39 @@ public class EditorController {
         if (!tempChairRoom.isLegalChair(tempChair)) {
             tempChair.setCoordinateX(oldX);
             tempChair.setCoordinateY(oldY);
+        }
+        building.redrawBuilding(canvas);
+         */
+        /*
+        double oldX = tempChair.getCoordinateX();
+        tempChair.setCoordinateX(mouseEvent.getX() - chairOffsetX);
+        if (!tempChairRoom.isLegalChair(tempChair)) {
+            tempChair.setCoordinateX(oldX);
+        }
+        double oldY = tempChair.getCoordinateY();
+        tempChair.setCoordinateY(mouseEvent.getY() - chairOffsetY);
+        if (!tempChairRoom.isLegalChair(tempChair)) {
+            tempChair.setCoordinateY(oldY);
+        }
+        building.redrawBuilding(canvas);
+        */
+        ghostChair.setCoordinateX(mouseEvent.getX() - ghostOffsetX);
+        ghostChair.setCoordinateY(mouseEvent.getY() - ghostOffsetY);
+        ghostChair.toGridCoordinates(building.getGridSize());
+        if(selectionController.chairLegal(ghostChair, tempChairRoom)) {
+            tempChair.setCoordinateX(ghostChair.getCoordinateX());
+            tempChair.setCoordinateY(ghostChair.getCoordinateY());
+        } else {
+            double oldX = tempChair.getCoordinateX();
+            tempChair.setCoordinateX(mouseEvent.getX() - chairOffsetX);
+            if (!tempChairRoom.isLegalChair(tempChair)) {
+                tempChair.setCoordinateX(oldX);
+            }
+            double oldY = tempChair.getCoordinateY();
+            tempChair.setCoordinateY(mouseEvent.getY() - chairOffsetY);
+            if (!tempChairRoom.isLegalChair(tempChair)) {
+                tempChair.setCoordinateY(oldY);
+            }
         }
         building.redrawBuilding(canvas);
     }
@@ -629,6 +679,7 @@ public class EditorController {
 
     public void resetBuilding() {
         initSelectionController();
+        resetCursor();
         newRoom.setSelected(true);
         newRoom.setSelected(false);
         this.editorMode = EditorMode.NONE;
@@ -651,4 +702,86 @@ public class EditorController {
     public void setIC(InteraktionControl IC) {
         this.IC = IC;
     }
+
+    private void setCursorIcon() {
+        resetCursor();
+
+        String folder = "icons/";
+        String icon;
+
+        switch(getEditorMode()) {
+            case ROOM: icon = "room.png"; break;
+            case DELETE: icon = "delete.png"; break;
+            case MOVE: icon = "move.png"; break;
+            case ROOM_NAME: icon = "room_name.png"; break;
+            case OFFICE: icon = "office.png"; break;
+            case MEETING_ROOM: icon = "meeting_room.png"; break;
+            case HALL: icon = "hall.png"; break;
+            case CHAIR: icon = "chair.png"; break;
+            case TABLE: icon = "table.png"; break;
+            case DOCUMENT: icon = "document.png"; break;
+            case SELECT: icon = "select.png"; break;
+            case DELETE_SELECTION: icon = "delete.png"; break;
+            case MOVE_SELECTION: icon = "move.png"; break;
+            case SELECTION_TO_OFFICE: icon = "office.png"; break;
+            case SELECTION_TO_MEETING_ROOM: icon = "meeting_room.png"; break;
+            case SELECTION_TO_HALL: icon = "hall.png"; break;
+            default: return;
+        }
+        try {
+            BufferedImage bufImg = ImageIO.read(new File(folder+icon));
+            Image img = SwingFXUtils.toFXImage(bufImg,null);
+            ImageCursor cursor = new ImageCursor(img);
+            myPane.setCursor(cursor);
+        } catch(IOException e) {
+            resetCursor();
+}
+    }
+
+    private void resetCursor() {
+        myPane.setCursor(Cursor.DEFAULT);
+    }
+
+    //Macht verschiedene dinge wenn die Maus bewegt wird
+    /*public void onCanvasMoved(MouseEvent mouseEvent) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Room room = building.getRoomAtCoordinates(mouseEvent.getX(), mouseEvent.getY());
+        switch(editorMode) {
+            //falls man etwas löchen möchte soll das objekt über dem man gerade die Maus bewegt rot markiert werden
+            case DELETE:
+                    if (room != null){
+                        //Room oldRoom = room;
+                        double x1 = room.getCoordinateX();
+                        double x2 = x1 + room.getWidth();
+                        double y1 = room.getCoordinateY();
+                        double y2 = y1 + room.getHeight();
+                        double x = Double.min(x1, x2);
+                        double y = Double.min(y1, y2);
+                        double w = abs(room.getWidth());
+                        double h = abs(room.getHeight());
+                        /*if (room != oldRoom){
+                            switch(oldRoom.getType()){
+                                case OFFICE:
+                                    gc.setFill(Color.rgb(238, 232, 170, 0.7));
+                                    break;
+                                case MEETING_ROOM:
+                                    gc.setFill(Color.rgb(188, 143, 143, 0.7));
+                                    break;
+                                case HALL:
+                                    gc.setFill(Color.rgb(210, 140, 211, 0.7));
+                                    break;
+                                default:
+                                    gc.setFill(Color.rgb(200,200,200,0.7));
+                                    break;
+                            }
+                        }else {
+                        gc.setFill(Color.rgb(235, 65, 105, 0.9));
+                        gc.strokeRect(x, y, w, h);
+                        gc.fillRect(x, y, w, h);
+                    }
+                break;
+            default:
+                break;
+        }
+    }*/
 }

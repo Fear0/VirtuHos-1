@@ -554,4 +554,11 @@ public class SelectionController implements EventHandler<MouseEvent> {
     public boolean roomsSelected() {
         return selectionExists() && mode == Mode.ROOMS;
     }
+    public boolean chairLegal(Chair chair, Room room) {
+        GhostObject ghost = new GhostObject(chair, room);
+        this.ghostObjects.add(ghost);
+        boolean legal = ghostObjectsLegal(ghostObjects, canvas, building, Mode.OBJECTS);
+        this.ghostObjects.clear();
+        return legal;
+    }
 }
