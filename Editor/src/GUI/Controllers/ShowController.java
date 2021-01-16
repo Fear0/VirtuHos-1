@@ -126,8 +126,6 @@ public class ShowController {
                 }
             }
             if(tempRoom != null){
-                //TODO ID durch richtige ID ersetzen
-                String ID = this.username;
                 Person tempPerson = new Person(ID,this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
                         (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
@@ -139,8 +137,6 @@ public class ShowController {
                     }
                 }
                 if(tempRoom != null){
-                    //TODO ID durch richtige ID ersetzen
-                    String ID = this.username;
                     Person tempPerson = new Person(ID,this.username, (tempRoom.getCoordinateX() + tempRoom.getWidth()/2 - (0.5 * building.getGridSize())),
                             (tempRoom.getCoordinateY() + tempRoom.getHeight()/2 - (0.5 * building.getGridSize())));
                     DatabaseCommunication.updatePerson(tempPerson, buildingName);
@@ -216,9 +212,7 @@ public class ShowController {
 
             //move person
             if (room.getType() == RoomType.HALL) {
-                //TODO ID durch richtige ID ersetzen
-                String id = this.username;
-                Person tempPerson = new Person(id, this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
+                Person tempPerson = new Person(ID, this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
                         mouseEvent.getY() - (0.5 * building.getGridSize()));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                 building.redrawPersons(personCanvas);
@@ -243,8 +237,6 @@ public class ShowController {
 
                     //move person
                     if (room.getType() == RoomType.HALL) {
-                        //TODO ID durch richtige ID ersetzen
-                        String ID = this.username;
                         Person tempPerson = new Person(ID,this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
                                 mouseEvent.getY() - (0.5 * building.getGridSize()));
                         DatabaseCommunication.updatePerson(tempPerson, buildingName);
@@ -256,9 +248,7 @@ public class ShowController {
                                 mouseEvent.getY() - room.getCoordinateY());
                         if (chair != null) {
                             if (chair.isFree(room.getCoordinateX(), room.getCoordinateY(), buildingName)) {
-                                //TODO richtigen Aufruf für id benutzen
-                                String id = this.username;
-                                Person tempPerson = new Person(id, this.username, chair.getCoordinateX() + room.getCoordinateX(),
+                                Person tempPerson = new Person(ID, this.username, chair.getCoordinateX() + room.getCoordinateX(),
                                         chair.getCoordinateY() + room.getCoordinateY());
                                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                                 InteraktionMovePerson(room, false);
@@ -273,9 +263,7 @@ public class ShowController {
                         } else {
                             Chair tempChair = room.freeChair(buildingName);
                             if (tempChair != null) {
-                                //TODO ID durch richtige ID ersetzen
-                                String id = this.username;
-                                Person tempPerson = new Person(id, this.username,
+                                Person tempPerson = new Person(ID, this.username,
                                         tempChair.getCoordinateX() + room.getCoordinateX(),
                                         tempChair.getCoordinateY() + room.getCoordinateY());
                                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
