@@ -138,7 +138,7 @@ public class User {
             if(web != null) {
                 web.close();
             }
-        } catch (WebDriverException ex){
+        } catch (org.openqa.selenium.WebDriverException ex){
             return;
         }
     }
@@ -147,13 +147,17 @@ public class User {
      */
     public void activateWebcam(){
         try{
-            web.findElement(By.id("tippy-29")).click();
-        } catch (org.openqa.selenium.NoSuchElementException ex){
             try{
-                web.findElement(By.id("tippy-25")).click();
-            } catch (org.openqa.selenium.NoSuchElementException sex){
-                System.out.println("Whoops, there was a problem with the webcam request");
+                web.findElement(By.id("tippy-29")).click();
+            } catch (org.openqa.selenium.NoSuchElementException ex){
+                try{
+                    web.findElement(By.id("tippy-25")).click();
+                } catch (org.openqa.selenium.NoSuchElementException sex){
+                    System.out.println("Whoops, there was a problem with the webcam request");
+                }
             }
+        } catch (Exception ex){
+            return;
         }
 
     }

@@ -30,9 +30,9 @@ public class BBBMeeting {
      */
     public String createMeeting(String name, String attendeePW, String moderatorPW){
         String queryString = "name=" + name +
-                            "&meetingID=" + UUID.randomUUID() + //Creates a random ID for the meeting
-                            "&attendeePW=" + attendeePW +
-                            "&moderatorPW=" + moderatorPW;
+                "&meetingID=" + "+wb-1-" + UUID.randomUUID() + //Creates a random ID for the meeting
+                "&attendeePW=" + attendeePW +
+                "&moderatorPW=" + moderatorPW;
 
         String response = this.CallAPI("create", queryString);
         return response;
@@ -50,13 +50,13 @@ public class BBBMeeting {
      */
     public String joinMeeting(String meetingID, String password, String fullName, String userid){
         String queryString = "meetingID=" + meetingID +
-                        "&password=" + password +
-                        "&fullName=" + fullName +
-                        "&userID=" + userid +
-                        "&userdata-bbb_skip_video_preview=true" + //No effect when not joining automatically with a webcam
-                        "&userdata-bbb_auto_join_audio=true" +
-                        "&userdata-bbb_skip_check_audio=true" +
-                        "&userdata-bbb_listen_only_mode=false";
+                "&password=" + password +
+                "&fullName=" + fullName +
+                "&userID=" + userid +
+                "&userdata-bbb_skip_video_preview=true" + //No effect when not joining automatically with a webcam
+                "&userdata-bbb_auto_join_audio=true" +
+                "&userdata-bbb_skip_check_audio=true" +
+                "&userdata-bbb_listen_only_mode=false";
 
         String response = this.CallAPI("join", queryString);
 
