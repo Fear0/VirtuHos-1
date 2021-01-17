@@ -253,7 +253,7 @@ public class InteraktionControl {
                     Request r = request.get(0);
                     if (r.getType().equals("join")) {
                         Room roomToJoin = db.getRoomWithRoomID(db.findRoomFor(r.getSender()), db);
-                        r.createRequest(roomToJoin, rooms);
+                        System.out.println(r.createRequest(roomToJoin, rooms));
                     } else if (r.getType().equals("reject")) {
                         r.createRejectMessage("join");
                     } else if (r.getType().equals("webcam")) {

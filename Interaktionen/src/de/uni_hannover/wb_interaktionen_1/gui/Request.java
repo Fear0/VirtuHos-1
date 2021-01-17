@@ -5,10 +5,7 @@ import de.uni_hannover.wb_interaktionen_1.rooms.Room;
 import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -30,6 +27,7 @@ public class Request {
     private String sender;
     private String sender_name;
     private String type;
+    private boolean output = false;
 
     /** The constructor for a request.
      *
@@ -71,7 +69,7 @@ public class Request {
      * @param room The room to which the user is invited.
      * @param rooms The list with all rooms.
      */
-    public void createRequest(Room room, ArrayList<Room> rooms){
+    public boolean createRequest(Room room, ArrayList<Room> rooms){
         /*Stage popup = new Stage();
         VBox vBox = new VBox();
         Label infotext = new Label(sender_name + " hat sie in den Raum " + room.getType() + "_" + room.getId() + " eingeladen.");
@@ -115,17 +113,26 @@ public class Request {
         vBox.getChildren().addAll(infotext, timer_l, hbox);
         popup.setScene(stageScene);
         popup.show();*/
+
         Platform.runLater(new Runnable() {
+            public final ButtonType buttonTypeYes = new ButtonType("Annehmen", ButtonBar.ButtonData.YES);
+            public final ButtonType buttonTypeNo = new ButtonType("Ablehnen", ButtonBar.ButtonData.NO);
             @Override
             public void run() {
                 // Update UI here.
-                Alert alert = new Alert(Alert.AlertType.WARNING);
+                String conf = sender_name + "hat dich in seinen Raum aingeladen, möchtest du sie Einladung annehmen?";
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("einladung");
                 alert.setHeaderText(null);
-                alert.setContentText("du wurdest eingeladen");
-                alert.showAndWait();
+                alert.setContentText(conf);
+                alert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo);
+                Optional<ButtonType> result = alert.showAndWait();
+                if(result.orElse(null) != buttonTypeYes){
+                    output = true;
+                }
             }
         });
+        return output;
     }
 
     /**
