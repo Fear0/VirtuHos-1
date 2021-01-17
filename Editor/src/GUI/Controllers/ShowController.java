@@ -215,6 +215,8 @@ public class ShowController {
                 Person tempPerson = new Person(ID, this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
                         mouseEvent.getY() - (0.5 * building.getGridSize()));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                //TODO hier hallen gruppenerstellung
+                InteraktionMovePerson(room, false);
                 building.redrawPersons(personCanvas);
             } else {
                 //schließt aus, dass man sich im eigenen Raum hin und her bewegt, da dies bei der Interaktion immer wieder neue BBB räume öffnet
@@ -236,14 +238,7 @@ public class ShowController {
                     }
 
                     //move person
-                    if (room.getType() == RoomType.HALL) {
-                        Person tempPerson = new Person(ID,this.username, mouseEvent.getX() - (0.5 * building.getGridSize()),
-                                mouseEvent.getY() - (0.5 * building.getGridSize()));
-                        DatabaseCommunication.updatePerson(tempPerson, buildingName);
-                        //TODO hier hallen gruppenerstellung
-                        InteraktionMovePerson(room, false);
-                        building.redrawPersons(personCanvas);
-                    } else {
+                    if (room.getType() != RoomType.HALL) {
                         Chair chair = room.getChairAtRoomCoordinates(mouseEvent.getX() - room.getCoordinateX(),
                                 mouseEvent.getY() - room.getCoordinateY());
                         if (chair != null) {
