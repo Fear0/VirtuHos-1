@@ -238,7 +238,7 @@ public class InteraktionControl {
     /**
      * This methode checks for requests on the database to the current user
      */
-    public void checkRequest(String buildingID){
+    public boolean checkRequest(String buildingID){
         try {
             ArrayList<Room> rooms;
             if(buildingID != null){
@@ -253,7 +253,8 @@ public class InteraktionControl {
                     Request r = request.get(0);
                     if (r.getType().equals("join")) {
                         Room roomToJoin = db.getRoomWithRoomID(db.findRoomFor(r.getSender()), db);
-                        System.out.println(r.createRequest(roomToJoin, rooms));
+                        boolean output = r.createRequest(roomToJoin, rooms);
+                        return output;
                     } else if (r.getType().equals("reject")) {
                         r.createRejectMessage("join");
                     } else if (r.getType().equals("webcam")) {
@@ -285,6 +286,7 @@ public class InteraktionControl {
         } catch (SQLException e){
             e.printStackTrace();
         }
+        return false;
     }
 
     /** Update the status of the user in the database so he appears in the system correctly.

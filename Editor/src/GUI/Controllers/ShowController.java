@@ -38,6 +38,8 @@ public class ShowController {
     private PersonThread pThread;
     private InteraktionControl IC;
     private String ID;
+    private Person PersonToMove;
+    private Room MyRoom;
 
 
     //Setzt den Benutzernamen
@@ -188,8 +190,7 @@ public class ShowController {
                 //check if it was clicked on a person
                 for(Person person : DatabaseCommunication.getPersons(buildingName)){
                     if(mouseEvent.getX() <= person.getX() + (building.getGridSize()) && mouseEvent.getX() >= person.getX() && mouseEvent.getY() <= person.getY() + (building.getGridSize()) && mouseEvent.getY() >= person.getY() ){
-                        System.out.println(person.getName());
-                        IC.moveUser(person.getId(), currentUserRoomId(),false);
+                        this.PersonToMove = person;
                     }
                 }
                 return;
@@ -231,6 +232,7 @@ public class ShowController {
                         mouseEvent.getY() - (0.5 * building.getGridSize()));
                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
                 //TODO hier hallen gruppenerstellung
+                this.MyRoom = room;
                 InteraktionMovePerson(room, false);
                 building.redrawPersons(personCanvas);
             } else {
@@ -261,6 +263,7 @@ public class ShowController {
                                 Person tempPerson = new Person(ID, this.username, chair.getCoordinateX() + room.getCoordinateX(),
                                         chair.getCoordinateY() + room.getCoordinateY());
                                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                                this.MyRoom = room;
                                 InteraktionMovePerson(room, false);
                                 building.redrawPersons(personCanvas);
                             } else {
@@ -277,6 +280,7 @@ public class ShowController {
                                         tempChair.getCoordinateX() + room.getCoordinateX(),
                                         tempChair.getCoordinateY() + room.getCoordinateY());
                                 DatabaseCommunication.updatePerson(tempPerson, buildingName);
+                                this.MyRoom = room;
                                 InteraktionMovePerson(room, false);
                                 building.redrawPersons(personCanvas);
                             } else {
@@ -379,17 +383,27 @@ public class ShowController {
     }
 
     public void invited() {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                // Update UI here.
+        Person MySelf = DatabaseCommunication.getPerson(ID,buildingName);
+        if(this.MyRoom.getType() == RoomType.HALL){
+            this.PersonToMove = new Person(this.PersonToMove.getId(), this.PersonToMove.getName(),
+                    MySelf.getX(),MySelf.getY());
+        }else{
+            Chair tempChair = this.MyRoom.freeChair(buildingName);
+            if (tempChair != null) {
+                this.PersonToMove = new Person(this.PersonToMove.getId(), this.PersonToMove.getName(),
+                        tempChair.getCoordinateX() + this.MyRoom.getCoordinateX(),
+                        tempChair.getCoordinateY() + this.MyRoom.getCoordinateY());
+                DatabaseCommunication.updatePerson(this.PersonToMove, buildingName);
+                IC.moveUser(this.PersonToMove.getId(),this.MyRoom.getInteraktionsRoomID(),false);
+                building.redrawPersons(personCanvas);
+            } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle(Text.TITLE);
                 alert.setHeaderText(null);
                 alert.setContentText(Text.SHOW_CONTROLLER_NO_FREE_CHAIR);
                 alert.showAndWait();
             }
-        });
+        }
     }
 }
 
@@ -419,7 +433,10 @@ class BuildingThread implements Runnable{
 
 
             try{
-                IC.checkRequest(showController.getBuilding().getName());
+                boolean MoveAccepted = IC.checkRequest(showController.getBuilding().getName());
+                if(MoveAccepted){
+                    showController.invited();
+                }
             } catch (NullPointerException ex){
                 ex.printStackTrace();
                 System.out.println("exception");

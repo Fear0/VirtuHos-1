@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 /** This class manages the requests which are send when a user invites another user in his room.
  *
@@ -27,7 +29,8 @@ public class Request {
     private String sender;
     private String sender_name;
     private String type;
-    private boolean output = false;
+
+
 
     /** The constructor for a request.
      *
@@ -113,26 +116,34 @@ public class Request {
         vBox.getChildren().addAll(infotext, timer_l, hbox);
         popup.setScene(stageScene);
         popup.show();*/
+        final FutureTask query =new FutureTask(new Callable() {
+            public final ButtonType buttonTypeYes = new ButtonType("Ablehnen", ButtonBar.ButtonData.YES);
+            public final ButtonType buttonTypeNo = new ButtonType("Annehmen", ButtonBar.ButtonData.NO);
 
-        Platform.runLater(new Runnable() {
-            public final ButtonType buttonTypeYes = new ButtonType("Annehmen", ButtonBar.ButtonData.YES);
-            public final ButtonType buttonTypeNo = new ButtonType("Ablehnen", ButtonBar.ButtonData.NO);
             @Override
-            public void run() {
-                // Update UI here.
-                String conf = sender_name + "hat dich in seinen Raum aingeladen, möchtest du sie Einladung annehmen?";
+            public Boolean call() throws Exception {
+                String conf = sender_name + " hat dich in seinen Raum eingeladen, möchtest du die Einladung annehmen?";
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("einladung");
+                alert.setTitle("Einladung");
                 alert.setHeaderText(null);
                 alert.setContentText(conf);
                 alert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo);
                 Optional<ButtonType> result = alert.showAndWait();
-                if(result.orElse(null) != buttonTypeYes){
-                    output = true;
+                if(result.orElse(null) != buttonTypeYes) {
+                    return true;
                 }
+                return false;
             }
         });
-        return output;
+
+
+        Platform.runLater(query);
+        try {
+            return (boolean) query.get();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
