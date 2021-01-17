@@ -72,7 +72,7 @@ public class Request {
      * @param room The room to which the user is invited.
      * @param rooms The list with all rooms.
      */
-    public boolean createRequest(Room room, ArrayList<Room> rooms){
+    public String createRequest(Room room, ArrayList<Room> rooms){
         /*Stage popup = new Stage();
         VBox vBox = new VBox();
         Label infotext = new Label(sender_name + " hat sie in den Raum " + room.getType() + "_" + room.getId() + " eingeladen.");
@@ -130,20 +130,26 @@ public class Request {
                 alert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo);
                 Optional<ButtonType> result = alert.showAndWait();
                 if(result.orElse(null) != buttonTypeYes) {
+                    acceptRequest(room, rooms);
                     return true;
+                }else {
+                    rejectRequest();
+                    return false;
                 }
-                return false;
             }
         });
 
 
         Platform.runLater(query);
         try {
-            return (boolean) query.get();
+            if((boolean) query.get()) {
+                return sender;
+            }
+
         }catch(Exception e){
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     /**

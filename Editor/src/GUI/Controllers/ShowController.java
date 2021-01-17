@@ -186,11 +186,15 @@ public class ShowController {
 
             //check if it was rightclicked to invite someone
             if(mouseEvent.getButton() == MouseButton.SECONDARY){
-                System.out.println("rechtsklick");
                 //check if it was clicked on a person
-                for(Person person : DatabaseCommunication.getPersons(buildingName)){
-                    if(mouseEvent.getX() <= person.getX() + (building.getGridSize()) && mouseEvent.getX() >= person.getX() && mouseEvent.getY() <= person.getY() + (building.getGridSize()) && mouseEvent.getY() >= person.getY() ){
-                        this.PersonToMove = person;
+                Person Myself = DatabaseCommunication.getPerson(ID,buildingName);
+                Room RoomToMoveTo = building.getRoomAtCoordinates(Myself.getX(), Myself.getY());
+                if(RoomToMoveTo != null) {
+                    for (Person person : DatabaseCommunication.getPersons(buildingName)) {
+                        if (mouseEvent.getX() <= person.getX() + (building.getGridSize()) && mouseEvent.getX() >= person.getX() && mouseEvent.getY() <= person.getY() + (building.getGridSize()) && mouseEvent.getY() >= person.getY()) {
+                            this.PersonToMove = person;
+                            IC.moveUser(PersonToMove.getId(), RoomToMoveTo.getInteraktionsRoomID(), false);
+                        }
                     }
                 }
                 return;
@@ -382,19 +386,22 @@ public class ShowController {
         this.pThread = p;
     }
 
-    public void invited() {
-        Person MySelf = DatabaseCommunication.getPerson(ID,buildingName);
-        if(this.MyRoom.getType() == RoomType.HALL){
-            this.PersonToMove = new Person(this.PersonToMove.getId(), this.PersonToMove.getName(),
-                    MySelf.getX(),MySelf.getY());
+    public void invited(String Sender) {
+        Person Myself = DatabaseCommunication.getPerson(ID,buildingName);
+        Person Absender = DatabaseCommunication.getPerson(Sender,buildingName);
+        Room AbsenderRoom = building.getRoomAtCoordinates(Absender.getX(), Absender.getY());
+        if(AbsenderRoom.getType() == RoomType.HALL){
+            Myself = new Person(Myself.getId(), Myself.getName(),
+                    Absender.getX(),Absender.getY());
+            DatabaseCommunication.updatePerson(Myself, buildingName);
+            building.redrawPersons(personCanvas);
         }else{
-            Chair tempChair = this.MyRoom.freeChair(buildingName);
+            Chair tempChair = AbsenderRoom.freeChair(buildingName);
             if (tempChair != null) {
-                this.PersonToMove = new Person(this.PersonToMove.getId(), this.PersonToMove.getName(),
-                        tempChair.getCoordinateX() + this.MyRoom.getCoordinateX(),
-                        tempChair.getCoordinateY() + this.MyRoom.getCoordinateY());
-                DatabaseCommunication.updatePerson(this.PersonToMove, buildingName);
-                IC.moveUser(this.PersonToMove.getId(),this.MyRoom.getInteraktionsRoomID(),false);
+                Myself = new Person(Myself.getId(), Myself.getName(),
+                        tempChair.getCoordinateX() + AbsenderRoom.getCoordinateX(),
+                        tempChair.getCoordinateY() + AbsenderRoom.getCoordinateY());
+                DatabaseCommunication.updatePerson(Myself, buildingName);
                 building.redrawPersons(personCanvas);
             } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -426,16 +433,15 @@ class BuildingThread implements Runnable{
         InteraktionControl IC = showController.getIC();
         while(!exit){
             //replace this print with logic to update a building
-            System.out.println("in the thread for updates");
 
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
 
 
             try{
-                boolean MoveAccepted = IC.checkRequest(showController.getBuilding().getName());
-                if(MoveAccepted){
-                    showController.invited();
+                String MoveAccepted = IC.checkRequest(showController.getBuilding().getName());
+                if(MoveAccepted != null){
+                    showController.invited(MoveAccepted);
                 }
             } catch (NullPointerException ex){
                 ex.printStackTrace();
