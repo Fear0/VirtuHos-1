@@ -60,7 +60,7 @@ public class ShowController {
 
     //Entfernt einen Nutzer aus einem Gebaüde
     public void removeUser() {
-        DatabaseCommunication.deletePerson(username);
+        DatabaseCommunication.deletePerson(ID);
     }
 
     //Lädt ein Gebäude und zeigt es an
@@ -218,7 +218,7 @@ public class ShowController {
                 building.redrawPersons(personCanvas);
             } else {
                 //schließt aus, dass man sich im eigenen Raum hin und her bewegt, da dies bei der Interaktion immer wieder neue BBB räume öffnet
-                Person person = DatabaseCommunication.getPerson(username, buildingName);
+                Person person = DatabaseCommunication.getPerson(ID, buildingName);
                 Room tempRoom = null;
                 if (person != null)
                     tempRoom = building.getRoomAtCoordinates(person.getX(), person.getY());

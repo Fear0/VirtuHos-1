@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static GUI.MainMenu.show;
+
 
 public class MainMenuController {
 
@@ -56,7 +58,7 @@ public class MainMenuController {
             alert.showAndWait();
         } else {
             MainMenu.getShowController().setUsername(username);
-            MainMenu.primaryStage.setScene(MainMenu.show);
+            MainMenu.primaryStage.setScene(show);
             ShowController ctrl = MainMenu.getShowController();
             ctrl.setIC(IC);
         }
@@ -107,7 +109,6 @@ class PersonThread implements Runnable{
     public void run() {
 
         while(!exit){
-
             IC.updateUser();
 
             //wait 5 sec
