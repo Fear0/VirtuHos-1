@@ -9,6 +9,7 @@ import definitions.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import wb.analyse1.GUI.Client;
@@ -74,7 +75,7 @@ public class ShowController {
 
         Building loadBuilding = DatabaseCommunication.loadDialog(IC);
         if (loadBuilding != null){
-        if (building != null){
+            if (building != null){
                 removeUser();
                 building = new Building();
                 building.clearScreen(buildingCanvas);
@@ -180,6 +181,19 @@ public class ShowController {
             Room room = building.getRoomAtCoordinates(mouseEvent.getX(), mouseEvent.getY());
             if (room == null) return;
 
+            //check if it was rightclicked to invite someone
+            if(mouseEvent.getButton() == MouseButton.SECONDARY){
+                System.out.println("rechtsklick");
+                //check if it was clicked on a person
+                for(Person person : DatabaseCommunication.getPersons(buildingName)){
+                    if(mouseEvent.getX() <= person.getX() + (building.getGridSize()) && mouseEvent.getX() >= person.getX() && mouseEvent.getY() <= person.getY() + (building.getGridSize()) && mouseEvent.getY() >= person.getY() ){
+                        System.out.println(person.getName());
+                        IC.moveUser(person.getId(), currentUserRoomId(),false);
+                    }
+                }
+                return;
+            }
+
             //check if it was clicked on a lock and change the locks state
             if ((room.getType() != RoomType.HALL) &&
                     room.clickedOnLock(mouseEvent.getX() - room.getCoordinateX(),
@@ -274,8 +288,14 @@ public class ShowController {
                         }
                     }
                 }
+
             }
         }
+    }
+
+    private int currentUserRoomId() {
+        Person me = DatabaseCommunication.getPerson(ID, buildingName);
+        return building.getRoomAtCoordinates(me.getX(), me.getY()).getInteraktionsRoomID();
     }
 
     public Canvas getPersonCanvas() {
