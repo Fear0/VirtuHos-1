@@ -2,6 +2,7 @@ package GUI.Controllers;
 
 import GUI.MainMenu;
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -376,6 +377,20 @@ public class ShowController {
     public void setpThread(PersonThread p){
         this.pThread = p;
     }
+
+    public void invited() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                // Update UI here.
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(Text.TITLE);
+                alert.setHeaderText(null);
+                alert.setContentText(Text.SHOW_CONTROLLER_NO_FREE_CHAIR);
+                alert.showAndWait();
+            }
+        });
+    }
 }
 
 class BuildingThread implements Runnable{
@@ -397,14 +412,17 @@ class BuildingThread implements Runnable{
         InteraktionControl IC = showController.getIC();
         while(!exit){
             //replace this print with logic to update a building
-            //System.out.println("in the thread for: " + buildingName);
+            System.out.println("in the thread for updates");
 
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
 
+
             try{
                 IC.checkRequest(showController.getBuilding().getName());
             } catch (NullPointerException ex){
+                ex.printStackTrace();
+                System.out.println("exception");
                 IC.checkRequest(null);
             }
 
