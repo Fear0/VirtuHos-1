@@ -5,7 +5,9 @@ import de.uni_hannover.wb_interaktionen_1.rooms.Room;
 import de.uni_hannover.wb_interaktionen_1.test_db.TestDB;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -13,6 +15,7 @@ import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -69,7 +72,7 @@ public class Request {
      * @param rooms The list with all rooms.
      */
     public void createRequest(Room room, ArrayList<Room> rooms){
-        Stage popup = new Stage();
+        /*Stage popup = new Stage();
         VBox vBox = new VBox();
         Label infotext = new Label(sender_name + " hat sie in den Raum " + room.getType() + "_" + room.getId() + " eingeladen.");
         Label timer_l = new Label();
@@ -111,7 +114,18 @@ public class Request {
         hbox.getChildren().addAll(accept, reject);
         vBox.getChildren().addAll(infotext, timer_l, hbox);
         popup.setScene(stageScene);
-        popup.show();
+        popup.show();*/
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                // Update UI here.
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("einladung");
+                alert.setHeaderText(null);
+                alert.setContentText("du wurdest eingeladen");
+                alert.showAndWait();
+            }
+        });
     }
 
     /**

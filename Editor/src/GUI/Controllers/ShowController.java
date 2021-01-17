@@ -2,6 +2,7 @@ package GUI.Controllers;
 
 import GUI.MainMenu;
 import de.uni_hannover.wb_interaktionen_1.i_face.InteraktionControl;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -9,6 +10,7 @@ import definitions.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import wb.analyse1.GUI.Client;
@@ -74,7 +76,7 @@ public class ShowController {
 
         Building loadBuilding = DatabaseCommunication.loadDialog(IC);
         if (loadBuilding != null){
-        if (building != null){
+            if (building != null){
                 removeUser();
                 building = new Building();
                 building.clearScreen(buildingCanvas);
@@ -180,6 +182,19 @@ public class ShowController {
             Room room = building.getRoomAtCoordinates(mouseEvent.getX(), mouseEvent.getY());
             if (room == null) return;
 
+            //check if it was rightclicked to invite someone
+            if(mouseEvent.getButton() == MouseButton.SECONDARY){
+                System.out.println("rechtsklick");
+                //check if it was clicked on a person
+                for(Person person : DatabaseCommunication.getPersons(buildingName)){
+                    if(mouseEvent.getX() <= person.getX() + (building.getGridSize()) && mouseEvent.getX() >= person.getX() && mouseEvent.getY() <= person.getY() + (building.getGridSize()) && mouseEvent.getY() >= person.getY() ){
+                        System.out.println(person.getName());
+                        IC.moveUser(person.getId(), currentUserRoomId(),false);
+                    }
+                }
+                return;
+            }
+
             //check if it was clicked on a lock and change the locks state
             if ((room.getType() != RoomType.HALL) &&
                     room.clickedOnLock(mouseEvent.getX() - room.getCoordinateX(),
@@ -274,8 +289,14 @@ public class ShowController {
                         }
                     }
                 }
+
             }
         }
+    }
+
+    private int currentUserRoomId() {
+        Person me = DatabaseCommunication.getPerson(ID, buildingName);
+        return building.getRoomAtCoordinates(me.getX(), me.getY()).getInteraktionsRoomID();
     }
 
     public Canvas getPersonCanvas() {
@@ -356,6 +377,20 @@ public class ShowController {
     public void setpThread(PersonThread p){
         this.pThread = p;
     }
+
+    public void invited() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                // Update UI here.
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(Text.TITLE);
+                alert.setHeaderText(null);
+                alert.setContentText(Text.SHOW_CONTROLLER_NO_FREE_CHAIR);
+                alert.showAndWait();
+            }
+        });
+    }
 }
 
 class BuildingThread implements Runnable{
@@ -377,14 +412,17 @@ class BuildingThread implements Runnable{
         InteraktionControl IC = showController.getIC();
         while(!exit){
             //replace this print with logic to update a building
-            //System.out.println("in the thread for: " + buildingName);
+            System.out.println("in the thread for updates");
 
             building.redrawPersons(personCanvas);
             building.redrawLocks(lockCanvas);
 
+
             try{
                 IC.checkRequest(showController.getBuilding().getName());
             } catch (NullPointerException ex){
+                ex.printStackTrace();
+                System.out.println("exception");
                 IC.checkRequest(null);
             }
 
