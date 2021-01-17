@@ -54,7 +54,10 @@ public class ShowController {
         building = null;
         new Building().redrawEverything(buildingCanvas, personCanvas, lockCanvas);
         //stop the thread for building updates
-        if(this.thread != null) this.thread.end();
+        if(this.thread != null){
+            this.thread.end();
+            this.thread = null;
+        }
         MainMenu.primaryStage.setScene(MainMenu.mainMenu);
     }
 
@@ -118,7 +121,7 @@ public class ShowController {
 
             ///// @David Sebode aus Interaktionen hat das hier umgeschrieben
             int hallID = IC.sendUserToStartingHall(building.getName());
-            System.out.println(hallID);
+            System.out.println("hallid: "+hallID);
             Room tempRoom = null;
             for(Room room : building.getRooms()){
                 if(room.getInteraktionsRoomID() == hallID){
@@ -153,10 +156,7 @@ public class ShowController {
                 Thread t1 = new Thread(thread, "building updates");
                 t1.setDaemon(true);
                 t1.start();
-            } else{
-                this.thread.setBuilding(building);
             }
-
         }
     }
 
