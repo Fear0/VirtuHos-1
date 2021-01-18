@@ -99,7 +99,7 @@ public class Main {
         db.insertInOrUpdateInteractionTable();
         db.insertInOrUpdateUsersTable();
 
-        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers(),null);
 
         waiting(2000);
         DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_2_2);
@@ -120,7 +120,7 @@ public class Main {
         db.insertInOrUpdateInteractionTable();
         db.insertInOrUpdateUsersTable();
 
-        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers(),null);
 
 
         waiting(2000);
@@ -144,7 +144,7 @@ public class Main {
         // deletion is just for testing, omit this
         //db.deleteAllUsers();
         //db.deleteAllInteractions();
-        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers(),null);
 
         waiting(2000);
         DemoEnvironment.generateEnvironment(1, DemoEnvironment.userTest_3_1);
@@ -164,7 +164,7 @@ public class Main {
         db.insertInOrUpdateUsersTable();
         db.insertInOrUpdateInteractionTable();
 
-        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers());
+        guiThread.setModel(analyse.getNetworkMatrix(), analyse.getUsers(), analyse.getOnlineUsers(),null);
 
         db.close();
         analyse.printUsers();

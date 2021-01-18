@@ -1,9 +1,14 @@
 package wb.analyse1.GUI;
 
+import definitions.DatabaseCommunication;
+import definitions.Person;
+import javafx.util.Pair;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.sql.SQLOutput;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +24,9 @@ public class GraphicsPainter extends JPanel {
 
     Calculation calc;
     int[] positionsOnline;
+    //String building;
     Color[] CliqueColors = {Color.BLUE, Color.GREEN, Color.RED, Color.PINK, Color.CYAN, Color.MAGENTA};
-    private ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList = new ArrayList<AbstractMap.SimpleEntry<Integer, Integer>>();
+    private ArrayList<Pair<String, Pair<Integer,Integer>>> arrayList = new ArrayList<>();
 
     boolean switchOnline = false;
 
@@ -38,13 +44,45 @@ public class GraphicsPainter extends JPanel {
 
     public List<VertexPoint> verticies;
 
+
+    public List<String> getIDSinBuilding(){
+        List<String> ids = new ArrayList<>();
+        List<Person> persons =  DatabaseCommunication.getPersons(this.calc.getBuilding());
+        System.out.println(this.calc.getBuilding());
+        System.out.println(persons.size());
+        System.out.println("Persons: ");
+        for (Person person : persons){
+            ids.add(person.getId());
+            System.out.println(person);
+        }
+        return ids;
+    }
+
+    public void setRealPositions(){
+
+        List<Person> persons = DatabaseCommunication.getPersons(this.calc.getBuilding());
+        System.out.println("getting positions");
+        for (int i = 0; i < this.arrayList.size(); i++){
+            for (Person person : persons){
+                if ( person.getId().equals(this.arrayList.get(i).getKey())){
+                    Integer x = Math.toIntExact(Math.round(person.getX()));
+                    Integer y = Math.toIntExact(Math.round(person.getY()));
+                    Pair<String, Pair<Integer,Integer>> pair = new Pair<String,Pair<Integer,Integer>>(person.getId(),new Pair<Integer,Integer>(x,y));
+                    this.arrayList.set(i,pair);
+                    System.out.println(this.arrayList.get(i).getValue().getKey() +", " + pair.getValue().getValue());
+                }
+            }
+
+        }
+
+    }
     @Override
     public String getToolTipText(MouseEvent event) { // names will be displayed by mouse hover
         for (VertexPoint vp : verticies) {
             if (vp.contains(event.getPoint())) {
                 int k=arrayList.size();
                 for(int i=0;i<k;i++){
-                    if(arrayList.get(i).getKey() + 120 ==vp.getVertex().getPoint().getX() ){
+                    if(arrayList.get(i).getValue().getKey() + 120 == vp.getVertex().getPoint().getX()){
                         return (i+ 1) + ". " + calc.Employee_Getter()[i].getName();
                     }
                 }
@@ -55,7 +93,21 @@ public class GraphicsPainter extends JPanel {
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        System.out.println("Drawing:");
         Graphics2D g2d = (Graphics2D) g.create();
+        GUIUser[] Employee = calc.Employee_Getter();
+        System.out.println("server users id:");
+        for (GUIUser guiUser : Employee) {
+            System.out.println(guiUser.getUser().getId());
+        }
+        int[][] Matrix_EXAMPLE1 = calc.Matrix_getter();
+        List<String> ids = getIDSinBuilding();
+        List<String> ids2 = new ArrayList<>();
+        ids2.add("w_tciwatgsppoa");
+        ids2.add("0002");
+        setRealPositions();
+        System.out.println("ids from database: ");
+        ids.forEach(n -> System.out.println(n));
         for (VertexPoint vertex : verticies) {
             g2d.fill(vertex);
             g2d.setColor(Color.white);
@@ -68,11 +120,14 @@ public class GraphicsPainter extends JPanel {
                 CliqueIds[k] = calc.Employee_Getter()[k].CliqueGetter();
             }
 
-            int[][] Matrix_EXAMPLE1 = calc.Matrix_getter();
-            GUIUser[] Employee = calc.Employee_Getter();
+           /* int[][] Matrix_EXAMPLE1 = calc.Matrix_getter();
+            GUIUser[] Employee = calc.Employee_Getter();*/
 
 
             for (int j = 0; j < Matrix_EXAMPLE1.length; j++) { //draw edges
+                if (!ids2.contains(Employee[j].getUser().getId())) {
+                    continue;
+                }
                 for (int v = 0; v < Matrix_EXAMPLE1.length; v++) {
                     int h = Matrix_EXAMPLE1[v][j];
                     if (h > 0) {
@@ -81,18 +136,21 @@ public class GraphicsPainter extends JPanel {
                         stroke = new BasicStroke(3.0f);
                         gg.setStroke(stroke);
                         if (!switchOnline) {
-                            gg.drawLine(arrayList.get(v).getKey() + 120, arrayList.get(v).getValue() + 120,
-                                    arrayList.get(j).getKey() + 120, arrayList.get(j).getValue() + 120);
+                            gg.drawLine(arrayList.get(v).getValue().getKey() + 120, arrayList.get(v).getValue().getValue() + 120,
+                                    arrayList.get(j).getValue().getKey() + 120, arrayList.get(j).getValue().getValue() + 120);
                         }
                         if (switchOnline && this.occurence(positionsOnline, j) && this.occurence(positionsOnline, v)) {
-                            gg.drawLine(arrayList.get(v).getKey() + 120, arrayList.get(v).getValue() + 120,
-                                    arrayList.get(j).getKey() + 120, arrayList.get(j).getValue() + 120);
+                            gg.drawLine(arrayList.get(v).getValue().getKey() + 120, arrayList.get(v).getValue().getValue() + 120,
+                                    arrayList.get(j).getValue().getKey() + 120, arrayList.get(j).getValue().getValue() + 120);
                         }
 
                     }
                 }
             }
             for (int i = 0; i < Matrix_EXAMPLE1.length; i++) {
+                if (!ids2.contains(Employee[i].getUser().getId())) {
+                    continue;
+                }
                 String[] Clique = Employee[i].CliqueGetter().split(",");
                 int No_clique = Clique.length;
                 if (No_clique > 0) {
@@ -125,7 +183,7 @@ public class GraphicsPainter extends JPanel {
                     for (int z = 0; z < No_clique; z++) {
                         int c = (Integer.parseInt(Clique[z])) - 1;
                         ga.setPaint(CliqueColors[c]);
-                        Arc2D arc2D4 = new Arc2D.Double(arrayList.get(i).getKey() + 100, arrayList.get(i).getValue() + 100, 30.0f, 30.0f, start, slice, Arc2D.PIE);
+                        Arc2D arc2D4 = new Arc2D.Double(arrayList.get(i).getValue().getKey() + 100, arrayList.get(i).getValue().getValue() + 100, 30.0f, 30.0f, start, slice, Arc2D.PIE);
                         if (!switchOnline) {
                             ga.fill(arc2D4);
                             ga.draw(arc2D4);
@@ -145,6 +203,9 @@ public class GraphicsPainter extends JPanel {
             }
         } else {
             for (int j = 0; j < calc.arrEdgeWeight.length; j++) { //draw edges
+                if (!ids2.contains(Employee[j].getUser().getId())) {
+                    continue;
+                }
                 for (int v = 0; v < calc.arrEdgeWeight.length; v++) {
                     int h = calc.Matrix_getter()[j][v];
                     if (h > 0) {
@@ -158,12 +219,12 @@ public class GraphicsPainter extends JPanel {
                         }
                         gg.setStroke(stroke);
                         if (!switchOnline) {
-                            gg.drawLine(arrayList.get(v).getKey() + 120, arrayList.get(v).getValue() + 120,
-                                    arrayList.get(j).getKey() + 120, arrayList.get(j).getValue() + 120);
+                            gg.drawLine(arrayList.get(v).getValue().getKey() + 120, arrayList.get(v).getValue().getValue() + 120,
+                                    arrayList.get(j).getValue().getKey() + 120, arrayList.get(j).getValue().getValue() + 120);
                         }
                         if (switchOnline && this.occurence(positionsOnline, j) && this.occurence(positionsOnline, v)) {
-                            gg.drawLine(arrayList.get(v).getKey() + 120, arrayList.get(v).getValue() + 120,
-                                    arrayList.get(j).getKey() + 120, arrayList.get(j).getValue() + 120);
+                            gg.drawLine(arrayList.get(v).getValue().getKey() + 120, arrayList.get(v).getValue().getValue() + 120,
+                                    arrayList.get(j).getValue().getKey() + 120, arrayList.get(j).getValue().getValue() + 120);
                         }
 
                     }
@@ -173,6 +234,9 @@ public class GraphicsPainter extends JPanel {
 
 
             for (int i = 0; i < calc.Size_getter(); i++) {
+                if (! ids2.contains(Employee[i].getUser().getId())) {
+                    continue;
+                }
                 //draw nodes
                 if (this.strategy == 0) {
                     g.setColor(new Color(76, 111, 111, 255));
@@ -198,12 +262,12 @@ public class GraphicsPainter extends JPanel {
                     //System.out.println(closeness +"nikni");
                 }
                 if (!switchOnline) {
-                    g.drawOval(arrayList.get(i).getKey() + 100, arrayList.get(i).getValue() + 100, 30, 30);
-                    g.fillOval(arrayList.get(i).getKey() + 100, arrayList.get(i).getValue() + 100, 30, 30);
+                    g.drawOval(arrayList.get(i).getValue().getKey() + 100, arrayList.get(i).getValue().getValue() + 100, 30, 30);
+                    g.fillOval(arrayList.get(i).getValue().getKey() + 100, arrayList.get(i).getValue().getValue() + 100, 30, 30);
                 }
                 if (switchOnline && this.occurence(positionsOnline, i)) {
-                    g.drawOval(arrayList.get(i).getKey() + 100, arrayList.get(i).getValue() + 100, 30, 30);
-                    g.fillOval(arrayList.get(i).getKey() + 100, arrayList.get(i).getValue() + 100, 30, 30);
+                    g.drawOval(arrayList.get(i).getValue().getKey() + 100, arrayList.get(i).getValue().getValue() + 100, 30, 30);
+                    g.fillOval(arrayList.get(i).getValue().getKey() + 100, arrayList.get(i).getValue().getValue() + 100, 30, 30);
                 }
             /*g.setColor(Color.black);
 
@@ -318,13 +382,15 @@ public class GraphicsPainter extends JPanel {
         return 12.0f / max;
     }
 
-    public void setArrayList(ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList) {
+    public void setArrayList(ArrayList<Pair<String, Pair<Integer,Integer>>> arrayList) {
         this.arrayList = arrayList;
     }
 
-    public GraphicsPainter(Calculation calc, ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList) {
+    public GraphicsPainter(Calculation calc, ArrayList<Pair<String, Pair<Integer,Integer>>> arrayList, String building) {
+
         this.calc = calc;
         this.arrayList = arrayList;
+        //this.building = building;
         GUIUser[] onlineUsers = calc.getOnlineUsers();
         int i = 0;
         verticies = new ArrayList<>(25);
@@ -338,8 +404,8 @@ public class GraphicsPainter extends JPanel {
             System.out.println();
         }
         for(int index=0;index< calc.Size_getter();index++){
-            int x=arrayList.get(index).getKey() + 120;
-            int y=arrayList.get(index).getValue() + 120;
+            int x=arrayList.get(index).getValue().getKey() + 120;
+            int y=arrayList.get(index).getValue().getValue() + 120;
             add(new Vertex(new Point(x,y)));
 
         }
@@ -382,8 +448,8 @@ public class GraphicsPainter extends JPanel {
         }
         for(int index=0;index< calc.Size_getter();index++){
             if(arrayList.size()>0){
-            int x=arrayList.get(index).getKey() + 100;
-            int y=arrayList.get(index).getValue() + 100;
+            int x=arrayList.get(index).getValue().getKey() + 100;
+            int y=arrayList.get(index).getValue().getValue() + 100;
             add(new Vertex(new Point(x,y)));}
 
         }}
@@ -439,7 +505,7 @@ public class GraphicsPainter extends JPanel {
 
 
 
-    public ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> getArrayList() {
+    public ArrayList<Pair<String, Pair<Integer,Integer>>> getArrayList() {
         return arrayList;
     }
 

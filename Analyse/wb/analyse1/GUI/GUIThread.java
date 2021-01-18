@@ -26,13 +26,14 @@ public  class GUIThread implements Runnable {
 
     public GUIThread(int[][] networkMatrix, LinkedHashSet<User> users, LinkedHashSet<User> onlineUsers, Client client) {
 
+        System.out.println(client.getBuildingName());
         if (networkMatrix == null || users == null || onlineUsers == null) {
             int[][] empty = {{}};
             LinkedHashSet<User> usersSet = new LinkedHashSet<>();
             LinkedHashSet<User> onlineUsersSet = new LinkedHashSet<>();
-            this.model = new Model(empty, usersSet, onlineUsersSet);
+            this.model = new Model(empty, usersSet, onlineUsersSet,client.getBuildingName());
         } else {
-            this.model = new Model(networkMatrix, users, onlineUsers);
+            this.model = new Model(networkMatrix, users, onlineUsers,client.getBuildingName());
         }
         this.view = new View();
         this.controller = new Controller(model, view);
@@ -65,8 +66,8 @@ public  class GUIThread implements Runnable {
         this.view.repaint();
     }
 
-    public void setModel(int[][] networkMatrix, LinkedHashSet<User> users, LinkedHashSet<User> onlineUsers) {
-        this.model.setCalc(new Calculation(networkMatrix, users, onlineUsers));
+    public void setModel(int[][] networkMatrix, LinkedHashSet<User> users, LinkedHashSet<User> onlineUsers,String building) {
+        this.model.setCalc(new Calculation(networkMatrix, users, onlineUsers),building);
     }
 
 

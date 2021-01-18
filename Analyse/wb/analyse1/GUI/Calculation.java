@@ -17,6 +17,13 @@ public class Calculation {
     private GUIUser[] onlineUsers;
     public double[] arrNodeWeight;
     public int[][] arrEdgeWeight;
+    private String building;
+
+
+    public String getBuilding(){ return building;}
+    public void setBuilding(String building){
+        this.building = building;
+    }
 
 
     public void setEmployee(GUIUser[] employee) {

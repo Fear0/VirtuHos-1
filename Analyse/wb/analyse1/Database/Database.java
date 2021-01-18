@@ -173,7 +173,9 @@ public class Database {
     public int[][] fetchNetworkMatrix(LinkedHashSet<User> users) {
         /* TODO:
          *   */
-
+        if (users == null || users.size() == 0){
+            return new int[0][];
+        }
         int[][] matrix = new int[0][];
         List<String> interactions = new ArrayList<>();
         String sqlInteraction = "Select * FROM A1_Interaction";
@@ -217,7 +219,7 @@ public class Database {
                 } catch (Exception e) {
                     System.out.println("Refetching...");
                     e.printStackTrace();
-                   // return fetchNetworkMatrix(users);
+                    return fetchNetworkMatrix(users);
                 }
             }
             //System.out.println(Arrays.deepToString(matrix).replaceAll("],", "]," + System.getProperty("line.separator")));
@@ -384,8 +386,17 @@ public class Database {
                     updateUser.setString(1, user.getId());
                     updateUser.setString(2, user.getName());
                     updateUser.setInt(3, user.getDegree());
-                    updateUser.setDouble(4, user.getBetweenness());
-                    updateUser.setDouble(5, user.getCloseness());
+                    if(Double.isNaN(user.getBetweenness())){
+                        //System.out.println("Lahiri 9a7ba kbira");
+                        updateUser.setDouble(4,0.0);
+                    } else {
+                        updateUser.setDouble(4, user.getBetweenness());
+                    }
+                    if (Double.isNaN(user.getCloseness())){
+                        updateUser.setDouble(5, 0.0);
+                    } else {
+                        updateUser.setDouble(5, user.getCloseness());
+                    }
                     updateUser.setDouble(6, user.getEigenvector());
                     updateUser.setString(7, user.getCliqueIDs());
                     updateUser.setInt(8, user.getPositionMatrix());
@@ -396,8 +407,16 @@ public class Database {
                     insertUser.setString(1, user.getId());
                     insertUser.setString(2, user.getName());
                     insertUser.setInt(3, user.getDegree());
-                    insertUser.setDouble(4, user.getBetweenness());
-                    insertUser.setDouble(5, user.getCloseness());
+                    if(Double.isNaN(user.getBetweenness())){
+                        insertUser.setDouble(4,0.0);
+                    } else {
+                        insertUser.setDouble(4, user.getBetweenness());
+                    }
+                    if (Double.isNaN(user.getCloseness())){
+                        insertUser.setDouble(5, 0.0);
+                    } else {
+                        insertUser.setDouble(5, user.getCloseness());
+                    }
                     insertUser.setDouble(6, user.getEigenvector());
                     insertUser.setString(7, user.getCliqueIDs());
                     insertUser.setInt(8, user.getPositionMatrix());

@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 
 import javax.swing.*;
+import javafx.util.Pair;
 
 /**
  * the Controller class that will control the entire GUI
@@ -17,7 +18,7 @@ public class Controller implements Observer {
     private View View;
     private static boolean isFirstTime = true;
     private static boolean onlineOnly = false;
-    private ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList = new ArrayList<AbstractMap.SimpleEntry<Integer, Integer>>(); //pair for positions
+    private ArrayList<Pair<String, Pair<Integer,Integer>>> arrayList = new ArrayList(); //pair for positions
 
     /**
      * the Controller constructor
@@ -38,11 +39,11 @@ public class Controller implements Observer {
         this.View.toggleOnlineListener(new toggleListener());
     }
 
-    public ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> getArrayList() {
+    public ArrayList<Pair<String, Pair<Integer,Integer>>> getArrayList() {
         return arrayList;
     }
 
-    public void setArrayList(ArrayList<AbstractMap.SimpleEntry<Integer, Integer>> arrayList) {
+    public void setArrayList(ArrayList<Pair<String, Pair<Integer,Integer>>> arrayList) {
         this.arrayList = arrayList;
     }
     /*public void changeModel(Model model) {
@@ -73,9 +74,11 @@ public class Controller implements Observer {
 
             int k = arrayList.size();
             for (int b = k; b < Graph.getCalc().Size_getter(); b++) {
-                arrayList.add(new AbstractMap.SimpleEntry<>(Graph.getCalc().Employee_Getter()[b].getX(), Graph.getCalc().Employee_Getter()[b].getY()));
+                arrayList.add(new Pair(Graph.getCalc().Employee_Getter()[b].getUser().getId(),new Pair(Graph.getCalc().Employee_Getter()[b].getX(),Graph.getCalc().Employee_Getter()[b].getY())));
+                //arrayList.add(new AbstractMap.SimpleEntry<>(Graph.getCalc().Employee_Getter()[b].getX(), Graph.getCalc().Employee_Getter()[b].getY()));
             }
-            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList);
+            System.out.println("Calculate methode building:" + Graph.getBuilding());
+            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList,Graph.getBuilding());
             if (onlineOnly) {
                 gr.setSwitchOnline(true);
 
@@ -211,7 +214,7 @@ public class Controller implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         Calculation calc = (Calculation) arg;
-        calc = ChangeDistance(calc);
+        /*calc = ChangeDistance(calc);
         boolean spacedGraph = false;
         if (arrayList.size() > 0) {
             int k = arrayList.size();
@@ -240,8 +243,9 @@ public class Controller implements Observer {
                     spacedGraph = true;
                 }
             }
-        }
+        }*/
         this.Graph = new Model(calc);
+        System.out.println("Controller buildingname first time: "+ calc.getBuilding());
         if (!isFirstTime) {
             View.remove(View.getGraphicsPainter());
             /*System.out.println("ok");
@@ -250,16 +254,18 @@ public class Controller implements Observer {
             int k = arrayList.size();
 
             for (int b = k; b < calc.Size_getter(); b++) {
-                arrayList.add(new AbstractMap.SimpleEntry<>(calc.Employee_Getter()[b].getX(), calc.Employee_Getter()[b].getY()));
+                arrayList.add(new Pair(Graph.getCalc().Employee_Getter()[b].getUser().getId(),new Pair(Graph.getCalc().Employee_Getter()[b].getX(),Graph.getCalc().Employee_Getter()[b].getY())));
+                //arrayList.add(new AbstractMap.SimpleEntry<>(calc.Employee_Getter()[b].getX(), calc.Employee_Getter()[b].getY()));
             }
-            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList);
+            System.out.println("Controller buildingname second time +: "+ calc.getBuilding());
+            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList,calc.getBuilding());
             View.setGraphicsPainter(gr);
             if (View.Interaktionshaufigkeit.isSelected()) {
                 calculate(0);
             }
             if (View.Degree_Centrality.isSelected()) {
                 calculate(1);
-                System.out.println(Arrays.deepToString(Graph.getCalc().Matrix_getter()));
+                //System.out.println(Arrays.deepToString(Graph.getCalc().Matrix_getter()));
             }
             if (View.Betweenness.isSelected()) {
                 calculate(2);
@@ -279,9 +285,11 @@ public class Controller implements Observer {
         } else {
 
             for (int b = 0; b < Graph.getCalc().Size_getter(); b++) {
-                arrayList.add(new AbstractMap.SimpleEntry<>(Graph.getCalc().Employee_Getter()[b].getX(), Graph.getCalc().Employee_Getter()[b].getY()));
+                arrayList.add(new Pair(Graph.getCalc().Employee_Getter()[b].getUser().getId(),new Pair(Graph.getCalc().Employee_Getter()[b].getX(),Graph.getCalc().Employee_Getter()[b].getY())));
+                //arrayList.add(new AbstractMap.SimpleEntry<>(Graph.getCalc().Employee_Getter()[b].getX(), Graph.getCalc().Employee_Getter()[b].getY()));
             }
-            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList);
+            System.out.println("Controller buildingname first click: "+ calc.getBuilding());
+            GraphicsPainter gr = new GraphicsPainter(Graph.getCalc(), this.arrayList,calc.getBuilding());
             this.View.setGraphicsPainter(gr);
             /*GraphicsPainter GP = new GraphicsPainter(Graph.getCalc());
             this.View.setGraphicsPainter(GP);*/
@@ -290,7 +298,7 @@ public class Controller implements Observer {
             }
             if (View.Degree_Centrality.isSelected()) {
                 calculate(1);
-                System.out.println(Arrays.deepToString(Graph.getCalc().Matrix_getter()));
+                //System.out.println(Arrays.deepToString(Graph.getCalc().Matrix_getter()));
             }
             if (View.Betweenness.isSelected()) {
                 calculate(2);

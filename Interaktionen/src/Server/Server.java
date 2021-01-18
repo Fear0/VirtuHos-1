@@ -2,7 +2,12 @@ package Server;
 
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import de.uni_hannover.wb_interaktionen_1.logic.ReadConfig;
+import org.xml.sax.SAXException;
+import wb.analyse1.bbbapi.BBBApi;
+import wb.analyse1.parser.ReadXMLSAXParser;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 
@@ -169,6 +174,18 @@ public class Server {
 
 
     public static void main(String[] args) {
+        ReadXMLSAXParser parser = new ReadXMLSAXParser();
+        BBBApi bbb = new BBBApi();
+        try {
+            parser.invokeParser(bbb);
+            ReadXMLSAXParser.endAllMeetings(bbb,"test",ReadXMLSAXParser.getMeetingIDS(parser.getMeetings()));
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Server db = new Server();
         int on_users = 0;
         System.out.printf("Setze alle inaktiven Nutzer auf dem Server offline...\n");

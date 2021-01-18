@@ -42,10 +42,10 @@ public class Analyse {
                 //THIS IF STATEMENT IS JUST FOR TESTING OUR OWN BBB MEETINGS
 
                 //System.out.println(meeting.getMeetingID());
-                if (meeting.getMeetingID().length() < 6) {
+                if (meeting.getMeetingID().length() < 5) {
                     continue;
                 }
-                if (!meeting.getMeetingID().substring(0, 6).equalsIgnoreCase("wb-a-1")) {
+                if (!meeting.getMeetingID().substring(0, 5).equalsIgnoreCase("wb-1-")) {
                     continue;
                 }
                 // end
@@ -77,10 +77,10 @@ public class Analyse {
                 //THESE IF STATEMENTS ARE JUST FOR TESTING OUR OWN BBB MEETINGS
 
                 //System.out.println(meeting.getMeetingID());
-                if (meeting.getMeetingID().length() < 6) {
+                if (meeting.getMeetingID().length() < 5) {
                     continue;
                 }
-                if (!meeting.getMeetingID().substring(0, 6).equalsIgnoreCase("wb-a-1")) {
+                if (!meeting.getMeetingID().substring(0, 5).equalsIgnoreCase("wb-1-")) {
                     continue;
                 }
                 // end
@@ -120,10 +120,10 @@ public class Analyse {
                 // THIS IF STATEMENT IS JUST FOR TESTING OUR OWN BBB MEETINGS
 
                 //System.out.println(meeting.getMeetingID());
-                if (meeting.getMeetingID().length() < 6) {
+                if (meeting.getMeetingID().length() < 5) {
                     continue;
                 }
-                if (!meeting.getMeetingID().substring(0, 6).equalsIgnoreCase("wb-a-1")) {
+                if (!meeting.getMeetingID().substring(0, 5).equalsIgnoreCase("wb-1-")) {
                     continue;
                 }
                 //
@@ -171,10 +171,10 @@ public class Analyse {
                 //THIS IF STATEMENT IS JUST FOR TESTING OUR OWN BBB MEETINGS
 
                 //System.out.println(meeting.getMeetingID());
-                if (meeting.getMeetingID().length() < 6) {
+                if (meeting.getMeetingID().length() < 5) {
                     continue;
                 }
-                if (!meeting.getMeetingID().substring(0, 6).equalsIgnoreCase("wb-a-1")) {
+                if (!meeting.getMeetingID().substring(0, 5).equalsIgnoreCase("wb-1-")) {
                     continue;
                 }
                 // end
@@ -509,7 +509,7 @@ public class Analyse {
 
         //Set<List<User>> usersInMaxCliques = new LinkedHashSet<>();
         AbstractMap.SimpleEntry<Integer, List<List<Integer>>> maxClique = null;
-        if (allCliques != null) {
+        if (allCliques.size()!=0) {
             maxClique = allCliques.get(allCliques.size() - 1);
         }
         return maxClique;
